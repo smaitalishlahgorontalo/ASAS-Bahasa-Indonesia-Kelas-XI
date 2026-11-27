@@ -1,0 +1,2236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CBT ASAS Ganjil 2026/2027 - SMA Islam Terpadu Al Ishlah</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            },
+            gold: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .no-select {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .exam-font-sm .question-body { font-size: 0.925rem; line-height: 1.65; }
+    .exam-font-md .question-body { font-size: 1.025rem; line-height: 1.75; }
+    .exam-font-lg .question-body { font-size: 1.15rem; line-height: 1.85; }
+
+    @keyframes pulseSubtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
+    }
+    .animate-pulse-subtle {
+      animation: pulseSubtle 1.8s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-100 selection:text-brand-900">
+
+  <!-- =====================================================================
+       LOADING OVERLAY (Digunakan saat Fetch Daftar Siswa & Kirim Jawaban)
+  ====================================================================== -->
+  <div id="global-loader" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-slate-100">
+      <div class="w-14 h-14 mx-auto mb-4 relative flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full border-4 border-brand-100"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-brand-600 border-t-transparent animate-spin"></div>
+        <svg class="w-6 h-6 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      </div>
+      <h3 id="loader-title" class="font-display font-bold text-lg text-slate-900">Memuat Data Ujian...</h3>
+      <p id="loader-subtitle" class="text-sm text-slate-500 mt-1">Menghubungkan ke server sekolah, mohon tunggu sebentar.</p>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       CUSTOM MODAL DIALOG (Pengganti alert() & confirm() Bawaan Browser)
+  ====================================================================== -->
+  <div id="custom-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 transform transition-all">
+      <div id="modal-header-bar" class="h-1.5 bg-brand-600"></div>
+      <div class="p-6">
+        <div class="flex items-start gap-4">
+          <div id="modal-icon-container" class="w-11 h-11 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <h3 id="modal-title" class="font-display font-bold text-lg text-slate-900 leading-snug">Konfirmasi</h3>
+            <div id="modal-message" class="text-sm text-slate-600 mt-2 leading-relaxed"></div>
+          </div>
+        </div>
+        <div id="modal-actions" class="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       VIEW 1: HALAMAN LOGIN / IDENTITAS PESERTA UJIAN
+  ====================================================================== -->
+  <main id="view-login" class="flex-1 flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl w-full mx-auto flex items-center justify-between bg-white/80 backdrop-blur border border-slate-200/80 rounded-2xl px-4 py-3 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center overflow-hidden shrink-0 p-1">
+          <img
+            src="https://iili.io/Ce8iqts.png"
+            alt="Logo SMA IT Al Ishlah"
+            class="w-full h-full object-contain"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <div class="hidden w-full h-full items-center justify-center bg-brand-700 text-white font-display font-bold text-xs rounded-lg">
+            AL-ISHLAH
+          </div>
+        </div>
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-brand-700">Computer-Based Test (CBT)</p>
+          <h1 class="font-display font-bold text-sm sm:text-base text-slate-900">SMA ISLAM TERPADU AL ISHLAH</h1>
+        </div>
+      </div>
+      <div id="connection-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+        <span>Memeriksa Server...</span>
+      </div>
+    </div>
+
+    <div class="max-w-4xl w-full mx-auto my-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div class="lg:col-span-5 bg-gradient-to-br from-brand-800 via-brand-700 to-emerald-900 text-white rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-xl relative overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
+        <div class="absolute -left-10 -bottom-10 w-36 h-36 rounded-full bg-gold-500/10 pointer-events-none"></div>
+
+        <div class="relative z-10">
+          <div class="w-16 h-16 rounded-2xl bg-white p-2 shadow-md mb-5 flex items-center justify-center">
+            <img
+              src="https://iili.io/Ce8iqts.png"
+              alt="Logo SMA Islam Terpadu Al Ishlah"
+              class="w-full h-full object-contain"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <div class="hidden w-full h-full items-center justify-center bg-brand-700 text-white font-display font-extrabold text-sm rounded-xl">
+              SMAIT
+            </div>
+          </div>
+
+          <span class="inline-block px-3 py-1 rounded-full bg-white/15 text-emerald-100 text-xs font-semibold tracking-wide mb-3">
+            Tahun Pelajaran 2026/2027
+          </span>
+          <h2 class="font-display font-extrabold text-2xl sm:text-3xl leading-tight">
+            Asesmen Sumatif Akhir Semester (ASAS) Ganjil
+          </h2>
+          <p class="text-emerald-100/90 text-sm mt-2">
+            SMA ISLAM TERPADU AL ISHLAH
+          </p>
+        </div>
+
+        <div class="relative z-10 mt-8 pt-6 border-t border-white/15 space-y-3 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-emerald-200">Mata Pelajaran</span>
+            <span class="font-semibold text-white">BAHASA INDONESIA</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-emerald-200">Kelas / Fase</span>
+            <span class="font-semibold text-white">Kelas XI / Fase F</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-emerald-200">Alokasi Waktu</span>
+            <span class="font-semibold text-gold-100 bg-gold-500/20 px-2.5 py-0.5 rounded-lg">60 Menit</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-emerald-200">Jumlah Soal</span>
+            <span class="font-semibold text-white">25 Butir Soal</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-200/80 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="font-display font-bold text-xl sm:text-2xl text-slate-900">Identitas Peserta Ujian</h3>
+            <button
+              type="button"
+              onclick="fetchInitialData(true)"
+              title="Muat ulang daftar siswa dari server"
+              class="inline-flex items-center gap-1.5 text-xs font-medium text-brand-700 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-xl transition"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Segarkan Data
+            </button>
+          </div>
+          <p class="text-sm text-slate-500 mb-6">
+            Silakan cari dan pilih nama lengkap Anda serta mata pelajaran yang diujikan. Tidak diperlukan NISN atau kata sandi.
+          </p>
+
+          <div id="already-submitted-banner" class="hidden mb-5 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-rose-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <p class="font-bold">Akses Ditolak — Ujian Sudah Dikerjakan</p>
+                <p id="already-submitted-text" class="mt-0.5 text-rose-700">Anda sudah mengumpulkan jawaban untuk mata pelajaran ini dan tidak diperkenankan mengerjakan ulang.</p>
+              </div>
+            </div>
+          </div>
+
+          <form id="login-form" class="space-y-5" onsubmit="handleLoginSubmit(event)">
+            <div>
+              <label for="student-search" class="block text-sm font-semibold text-slate-700 mb-1.5">
+                Cari & Pilih Nama Siswa <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative mb-2">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  id="student-search"
+                  placeholder="Ketik nama Anda untuk menyaring daftar..."
+                  autocomplete="off"
+                  oninput="filterStudentDropdown()"
+                  class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
+                />
+              </div>
+
+              <div class="relative">
+                <select
+                  id="student-select"
+                  required
+                  onchange="checkSubmissionEligibility()"
+                  class="w-full px-4 py-3 text-sm font-medium bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition appearance-none pr-10 text-slate-800"
+                >
+                  <option value="">-- Memuat daftar nama siswa... --</option>
+                </select>
+                <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </div>
+              <p id="student-count-hint" class="text-xs text-slate-400 mt-1.5">Menampilkan daftar peserta ujian aktif.</p>
+            </div>
+
+            <div>
+              <label for="subject-select" class="block text-sm font-semibold text-slate-700 mb-1.5">
+                Mata Pelajaran <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <select
+                  id="subject-select"
+                  required
+                  onchange="checkSubmissionEligibility()"
+                  class="w-full px-4 py-3 text-sm font-medium bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition appearance-none pr-10 text-slate-800"
+                >
+                  <option value="BAHASA INDONESIA">BAHASA INDONESIA (Kelas XI / Fase F)</option>
+                </select>
+                <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-xs text-amber-900 space-y-1">
+              <p class="font-semibold flex items-center gap-1.5 text-amber-800">
+                <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Tata Tertib Ujian Digital:
+              </p>
+              <ul class="list-disc list-inside text-amber-800/90 space-y-0.5 pl-1">
+                <li>Urutan soal diacak secara otomatis untuk setiap peserta.</li>
+                <li>Dilarang berpindah tab browser atau membuka aplikasi lain selama ujian berlangsung (aktivitas tercatat otomatis).</li>
+                <li>Jawaban dan sisa waktu tersimpan otomatis di perangkat Anda.</li>
+              </ul>
+            </div>
+
+            <button
+              type="submit"
+              id="btn-start-exam"
+              class="w-full py-3.5 px-6 rounded-xl bg-brand-700 hover:bg-brand-800 active:scale-[0.99] text-white font-display font-bold text-base shadow-lg shadow-brand-700/25 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>Mulai Ujian Sekarang</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </form>
+        </div>
+
+        <p class="text-xs text-center text-slate-400 mt-6">
+          &copy; 2026 Panitia ASAS Ganjil &bull; SMA Islam Terpadu Al Ishlah
+        </p>
+      </div>
+    </div>
+
+    <div class="h-2"></div>
+  </main>
+
+  <!-- =====================================================================
+       VIEW 2: HALAMAN PENGERJAAN UJIAN (CBT INTERFACE)
+  ====================================================================== -->
+  <div id="view-exam" class="hidden flex-1 flex-col min-h-screen exam-font-md">
+    <header class="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-50 border border-brand-100 p-1 flex items-center justify-center shrink-0">
+            <img
+              src="https://iili.io/Ce8iqts.png"
+              alt="Logo Sekolah"
+              class="w-full h-full object-contain"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <div class="hidden w-full h-full items-center justify-center bg-brand-700 text-white font-display font-bold text-[10px] rounded-lg">
+              SMAIT
+            </div>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="hidden sm:inline-block text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-50 text-brand-700">
+                ASAS 2026/2027
+              </span>
+              <h1 class="font-display font-bold text-xs sm:text-sm text-slate-900 truncate">
+                SMA ISLAM TERPADU AL ISHLAH
+              </h1>
+            </div>
+            <p id="header-student-info" class="text-xs text-slate-500 truncate mt-0.5">
+              Peserta: - &bull; BAHASA INDONESIA
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div class="hidden md:flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200" title="Ukuran Teks Soal">
+            <button type="button" onclick="setExamFontSize('sm')" id="font-btn-sm" class="px-2 py-1 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900">A-</button>
+            <button type="button" onclick="setExamFontSize('md')" id="font-btn-md" class="px-2 py-1 text-xs font-bold rounded-lg bg-white text-brand-700 shadow-sm">A</button>
+            <button type="button" onclick="setExamFontSize('lg')" id="font-btn-lg" class="px-2 py-1 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900">A+</button>
+          </div>
+
+          <div id="tab-violation-badge" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200" title="Jumlah perpindahan tab terdeteksi">
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span id="violation-count-text">0 Pindah Tab</span>
+          </div>
+
+          <div id="timer-box" class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-brand-50 border border-brand-200 text-brand-800 font-display font-bold text-sm sm:text-base shadow-sm">
+            <svg class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="timer-display">60:00</span>
+          </div>
+
+          <button
+            type="button"
+            onclick="toggleMobileNav(true)"
+            class="lg:hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-sm hover:bg-slate-800 transition"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            <span class="hidden xs:inline">Nomor</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-5 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <section class="lg:col-span-8 bg-white rounded-3xl shadow-sm border border-slate-200/90 overflow-hidden flex flex-col">
+        <div class="px-5 sm:px-7 py-4 bg-slate-50/80 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span id="q-badge-number" class="px-3.5 py-1.5 rounded-xl bg-brand-700 text-white font-display font-bold text-sm shadow-sm">
+              Soal No. 1
+            </span>
+            <span id="q-badge-type" class="px-3 py-1 rounded-xl bg-slate-200/70 text-slate-700 text-xs font-semibold">
+              Pilihan Ganda
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span id="autosave-indicator" class="inline-flex items-center gap-1 text-emerald-600 font-medium">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Tersimpan otomatis
+            </span>
+          </div>
+        </div>
+
+        <div id="question-container" class="p-5 sm:p-7 space-y-6 question-body"></div>
+
+        <div class="px-5 sm:px-7 py-4 bg-slate-50 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            id="btn-prev"
+            onclick="navigateQuestion(currentIndex - 1)"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Sebelumnya</span>
+          </button>
+
+          <button
+            type="button"
+            id="btn-doubtful"
+            onclick="toggleDoubtful()"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-semibold text-sm transition bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100"
+          >
+            <span id="doubtful-checkbox-icon" class="w-4 h-4 rounded border border-amber-500 flex items-center justify-center bg-white"></span>
+            <span>Ragu-ragu</span>
+          </button>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              id="btn-next"
+              onclick="navigateQuestion(currentIndex + 1)"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-semibold text-sm shadow-sm transition"
+            >
+              <span>Selanjutnya</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              id="btn-finish-inline"
+              onclick="promptSubmitExam()"
+              class="hidden inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Kumpulkan Ujian</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="hidden lg:block lg:col-span-4 sticky top-20 space-y-4">
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-display font-bold text-base text-slate-900">Navigasi Nomor Soal</h2>
+            <span id="desktop-progress-text" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700">
+              0 / 25 Terjawab
+            </span>
+          </div>
+
+          <div id="desktop-nav-grid" class="grid grid-cols-5 gap-2"></div>
+
+          <div class="mt-5 pt-4 border-t border-slate-100 grid grid-cols-3 gap-2 text-xs text-slate-600">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-emerald-500 inline-block shrink-0"></span>
+              <span>Terjawab</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-amber-400 inline-block shrink-0"></span>
+              <span>Ragu-ragu</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-slate-200 inline-block shrink-0"></span>
+              <span>Belum</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onclick="promptSubmitExam()"
+            class="mt-5 w-full py-3.5 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-display font-bold text-sm shadow-md transition flex items-center justify-center gap-2"
+          >
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Kumpulkan Ujian</span>
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <div id="mobile-nav-drawer" class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm hidden lg:hidden items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[85vh] flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <h3 class="font-display font-bold text-lg text-slate-900">Navigasi Nomor Soal</h3>
+            <p id="mobile-progress-text" class="text-xs text-slate-500 mt-0.5">0 dari 25 soal telah dijawab</p>
+          </div>
+          <button type="button" onclick="toggleMobileNav(false)" class="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div id="mobile-nav-grid" class="grid grid-cols-5 gap-2.5 py-5 overflow-y-auto"></div>
+
+        <div class="pt-3 border-t border-slate-100 space-y-4">
+          <div class="flex items-center justify-around text-xs text-slate-600">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-emerald-500 inline-block"></span>
+              <span>Terjawab</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-amber-400 inline-block"></span>
+              <span>Ragu-ragu</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-slate-200 inline-block"></span>
+              <span>Belum</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onclick="toggleMobileNav(false); promptSubmitExam();"
+            class="w-full py-3.5 px-5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-display font-bold text-sm shadow-md transition flex items-center justify-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Kumpulkan Ujian Sekarang</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       VIEW 3: HALAMAN BUKTI PENGUMPULAN UJIAN (TANPA MENAMPILKAN NILAI)
+  ====================================================================== -->
+  <main id="view-receipt" class="hidden flex-1 items-center justify-center p-4 sm:p-6">
+    <div class="max-w-lg w-full bg-white rounded-3xl shadow-xl border border-slate-200/90 overflow-hidden text-center">
+      <div class="bg-gradient-to-r from-brand-700 to-emerald-800 px-6 py-8 text-white">
+        <div class="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur mx-auto flex items-center justify-center mb-4">
+          <svg class="w-9 h-9 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 class="font-display font-extrabold text-2xl">Ujian Berhasil Dikumpulkan!</h2>
+        <p class="text-emerald-100 text-sm mt-1.5">
+          Terima kasih, lembar jawaban Anda telah berhasil terkirim dan tersimpan di server sekolah.
+        </p>
+      </div>
+
+      <div class="p-6 sm:p-8 text-left space-y-4">
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5 text-sm">
+          <div class="flex justify-between gap-4">
+            <span class="text-slate-500">Sekolah</span>
+            <span class="font-semibold text-slate-900 text-right">SMA ISLAM TERPADU AL ISHLAH</span>
+          </div>
+          <div class="flex justify-between gap-4">
+            <span class="text-slate-500">Asesmen</span>
+            <span class="font-semibold text-slate-900 text-right">ASAS Ganjil 2026/2027</span>
+          </div>
+          <div class="flex justify-between gap-4">
+            <span class="text-slate-500">Nama Peserta</span>
+            <span id="receipt-student-name" class="font-bold text-brand-700 text-right">-</span>
+          </div>
+          <div class="flex justify-between gap-4">
+            <span class="text-slate-500">Mata Pelajaran</span>
+            <span id="receipt-subject" class="font-semibold text-slate-900 text-right">BAHASA INDONESIA</span>
+          </div>
+          <div class="flex justify-between gap-4">
+            <span class="text-slate-500">Waktu Pengumpulan</span>
+            <span id="receipt-timestamp" class="font-medium text-slate-700 text-right">-</span>
+          </div>
+          <div class="flex justify-between gap-4">
+            <span class="text-slate-500">Durasi Pengerjaan</span>
+            <span id="receipt-duration" class="font-medium text-slate-700 text-right">-</span>
+          </div>
+          <div class="flex justify-between gap-4">
+            <span class="text-slate-500">Status Server</span>
+            <span id="receipt-server-status" class="inline-flex items-center gap-1 font-semibold text-emerald-700">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Tersimpan Resmi
+            </span>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-brand-50/70 border border-brand-100 text-xs text-brand-900 leading-relaxed">
+          <strong>Catatan:</strong> Nilai hasil asesmen akan diumumkan secara resmi oleh guru mata pelajaran setelah proses pemeriksaan soal uraian selesai. Anda dapat menutup halaman ini dengan aman.
+        </div>
+
+        <button
+          type="button"
+          onclick="returnToLoginScreen()"
+          class="w-full py-3 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition"
+        >
+          Kembali ke Halaman Awal
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- =====================================================================
+       JAVASCRIPT APPLICATION LOGIC & QUESTION BANK
+  ====================================================================== -->
+  <script>
+    /**
+     * KONFIGURASI BACKEND GOOGLE APPS SCRIPT (GAS)
+     */
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyci6YO6q_4fvGb0PwMUQDvDUxFShoWWbHougyHjr0tFz3E38fX8e0bnTUpya-P0mXW/exec";
+
+    const EXAM_CONFIG = {
+      schoolName: "SMA ISLAM TERPADU AL ISHLAH",
+      examTitle: "Asesmen Sumatif Akhir Semester (ASAS) Ganjil 2026/2027",
+      gradePhase: "Kelas XI / Fase F",
+      defaultSubject: "BAHASA INDONESIA",
+      durationMinutes: 60,
+      storagePrefix: "CBT_ALISHLAH_ASAS26_BI_"
+    };
+
+    const QUESTION_BANK = [
+      {
+        id: 1,
+        type: "pg",
+        passageTitle: null,
+        passageText: null,
+        question: "Secara umum, pembelajaran diskusi adalah metode mengajar yang melibatkan pertukaran gagasan, pendapat, dan informasi antara murid dengan guru, atau antar sesama murid, untuk membahas dan memecahkan suatu permasalahan atau topik materi tertentu. Di bawah ini merupakan beberapa definisi jenis diskusi, <strong>kecuali</strong> .....",
+        options: [
+          "bertujuan untuk menghasilkan ide sebanyak-banyaknya dalam waktu singkat. Dalam brainstorming, semua ide diterima tanpa kritik terlebih dahulu untuk memancing kreativitas",
+          "sebuah forum diskusi yang bersifat formal, terstruktur, dan ilmiah yang diselenggarakan untuk membahas, mendengarkan, atau mempresentasikan topik tertentu yang berkaitan dengan bidang ilmu, profesi, atau isu spesifik.",
+          "pertemuan yang lebih menekankan pada aktivitas praktis, kolaborasi intensif, dan pemecahan masalah (problem-solving) secara bersama-sama oleh para ahli atau peserta yang memiliki bidang keahlian atau minat yang sama",
+          "serangkaian presentasi atau pidato pendek yang disampaikan oleh beberapa pembicara (ahli) mengenai berbagai aspek dari satu topik atau subjek yang sama."
+        ],
+        answerKey: 0
+      },
+      {
+        id: 2,
+        type: "pg",
+        passageTitle: "Kutipan Teks Diskusi",
+        passageText: "HP atau orang-orang sekarang lebih sering menggunakan istilah <em>smartphone</em> adalah sebuah perangkat yang digunakan untuk mempermudah manusia dalam urusan komunikasi. Tidak hanya komunikasi saja, <em>smartphone</em> digunakan untuk membantu keperluan manusia lainnya. Hampir setiap orang memiliki HP, termasuk anak kecil sekalipun. Walau begitu, banyak terjadi pro dan kontra dalam hal pemberian HP untuk anak-anak.",
+        question: "Kutipan teks di atas termasuk struktur bagian……",
+        options: [
+          "isu",
+          "argumen",
+          "simpulan",
+          "kritikan"
+        ],
+        answerKey: 0
+      },
+      {
+        id: 3,
+        type: "pg",
+        passageTitle: "Pemberlakuan Jam Malam bagi Remaja di Bawah Umur di Lingkungan Perkotaan",
+        passageText: `<p class="mb-3">Tingginya angka kenakalan remaja, mulai dari aksi balap liar hingga keterlibatan dalam geng motor di berbagai kota besar, telah meresahkan masyarakat. Sebagai respons atas situasi ini, sejumlah kepala daerah mewacanakan aturan jam malam yang melarang remaja di bawah usia 18 tahun berada di luar rumah lewat pukul 22.00 WIB tanpa pendampingan orang tua atau alasan mendesak. Wacana ini pun memicu perdebatan hangat di tengah masyarakat.</p>
+        <p class="mb-3">Pihak yang mendukung pemberlakuan jam malam menilai aturan ini sebagai langkah preventif yang sangat efektif untuk melindungi anak-anak dari potensi tindak kriminalitas malam hari dan pengaruh buruk lingkungan bebas. Dengan adanya batasan waktu, pengawasan orang tua terhadap keberadaan anak di luar rumah akan menjadi lebih ketat, sehingga potensi kenakalan remaja dapat diredam sejak dini.</p>
+        <p>Di sisi lain, kelompok yang menentang kebijakan ini berargumen bahwa jam malam bukanlah solusi yang tepat dan cenderung merampas hak-hak dasar anak serta remaja. Banyak remaja yang memiliki kegiatan positif pada malam hari, seperti mengikuti bimbingan belajar, latihan organisasi, atau bekerja paruh waktu untuk membantu ekonomi keluarga. Mereka berpendapat bahwa akar masalah kenakalan remaja terletak pada kurangnya komunikasi dalam keluarga dan lemahnya penegakan hukum, bukan pada jam keberadaan mereka di jalanan. Pada akhirnya, pembatasan ruang gerak melalui jam malam memerlukan kajian yang sangat mendalam dan bijaksana. Pemerintah seharusnya tidak hanya memberlakukan sanksi administratif atau larangan, tetapi juga harus memperbanyak fasilitas publik yang ramah anak, memperbaiki sistem pendidikan karakter, serta memperkuat peran aktif keluarga agar remaja dapat terarah secara positif tanpa merasa terkekang.</p>`,
+        question: "Berdasarkan bagian isu pada paragraf pertama teks tersebut, latar belakang utama yang mendasari munculnya wacana pemberlakuan jam malam bagi remaja adalah...",
+        options: [
+          "keinginan pemerintah kota untuk mengurangi penggunaan kendaraan bermotor pada malam hari seperti balap liar dan geng motor.",
+          "tingginya angka kenakalan remaja seperti balap liar dan geng motor yang meresahkan masyarakat.",
+          "keinginan untuk mewajibkan seluruh penggunaan kendaraan bermotor tambahan di malam hari.",
+          "menurunnya tingkat kedisiplinan siswa di sekolah."
+        ],
+        answerKey: 1
+      },
+      {
+        id: 4,
+        type: "pg",
+        passageTitle: "Pemberlakuan Jam Malam bagi Remaja di Bawah Umur di Lingkungan Perkotaan",
+        passageText: `<p class="mb-3">Tingginya angka kenakalan remaja, mulai dari aksi balap liar hingga keterlibatan dalam geng motor di berbagai kota besar, telah meresahkan masyarakat. Sebagai respons atas situasi ini, sejumlah kepala daerah mewacanakan aturan jam malam yang melarang remaja di bawah usia 18 tahun berada di luar rumah lewat pukul 22.00 WIB tanpa pendampingan orang tua atau alasan mendesak. Wacana ini pun memicu perdebatan hangat di tengah masyarakat.</p>
+        <p class="mb-3">Pihak yang mendukung pemberlakuan jam malam menilai aturan ini sebagai langkah preventif yang sangat efektif untuk melindungi anak-anak dari potensi tindak kriminalitas malam hari dan pengaruh buruk lingkungan bebas. Dengan adanya batasan waktu, pengawasan orang tua terhadap keberadaan anak di luar rumah akan menjadi lebih ketat, sehingga potensi kenakalan remaja dapat diredam sejak dini.</p>
+        <p>Di sisi lain, kelompok yang menentang kebijakan ini berargumen bahwa jam malam bukanlah solusi yang tepat dan cenderung merampas hak-hak dasar anak serta remaja. Banyak remaja yang memiliki kegiatan positif pada malam hari, seperti mengikuti bimbingan belajar, latihan organisasi, atau bekerja paruh waktu untuk membantu ekonomi keluarga. Mereka berpendapat bahwa akar masalah kenakalan remaja terletak pada kurangnya komunikasi dalam keluarga dan lemahnya penegakan hukum, bukan pada jam keberadaan mereka di jalanan. Pada akhirnya, pembatasan ruang gerak melalui jam malam memerlukan kajian yang sangat mendalam dan bijaksana. Pemerintah seharusnya tidak hanya memberlakukan sanksi administratif atau larangan, tetapi juga harus memperbanyak fasilitas publik yang ramah anak, memperbaiki sistem pendidikan karakter, serta memperkuat peran aktif keluarga agar remaja dapat terarah secara positif tanpa merasa terkekang.</p>`,
+        question: "Manakah pernyataan di bawah ini yang paling tepat mewakili sudut pandang kelompok yang menentang (kontra) terhadap kebijakan jam malam?",
+        options: [
+          "jam malam terbukti mampu memberantas seluruh bentuk aksi kriminalitas jalanan dalam waktu singkat.",
+          "kebijakan ini sangat membantu orang tua dalam memantau jam tidur anak-anak mereka di rumah serta menganggap akar masalah bukan pada jam keberadaannya.",
+          "jam malam mengganggu aktivitas positif remaja, seperti bimbingan belajar atau kerja paruh waktu, serta menganggap akar masalah bukan pada jam keberadaannya.",
+          "remaja di bawah umur tidak memiliki hak sama sekali untuk keluar rumah di atas pukul 21.00 WIB."
+        ],
+        answerKey: 2
+      },
+      {
+        id: 5,
+        type: "pg",
+        passageTitle: null,
+        passageText: null,
+        illustrationSvg: `
+          <div class="my-3 rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 max-w-xl">
+            <svg viewBox="0 0 600 250" class="w-full h-auto block" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="screenGrad5" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#1e3a8a"/>
+                  <stop offset="100%" stop-color="#0f172a"/>
+                </linearGradient>
+              </defs>
+              <rect width="600" height="250" fill="#0f172a"/>
+              <rect x="45" y="18" width="510" height="145" rx="8" fill="url(#screenGrad5)" stroke="#38bdf8" stroke-width="2"/>
+              <text x="300" y="45" fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle">STRATEGI PEMBERANTASAN KORUPSI</text>
+              <rect x="115" y="60" width="160" height="22" rx="4" fill="#2563eb"/>
+              <text x="195" y="75" fill="#e0f2fe" font-family="sans-serif" font-size="9" text-anchor="middle">1. Pendidikan Antikorupsi</text>
+              <rect x="315" y="60" width="130" height="22" rx="4" fill="#ec4899"/>
+              <text x="380" y="75" fill="#ffffff" font-family="sans-serif" font-size="9" font-weight="bold" text-anchor="middle">Tidak Ingin Korupsi</text>
+              <rect x="115" y="90" width="160" height="22" rx="4" fill="#2563eb"/>
+              <text x="195" y="105" fill="#e0f2fe" font-family="sans-serif" font-size="9" text-anchor="middle">2. Perbaikan Sistem</text>
+              <rect x="315" y="90" width="130" height="22" rx="4" fill="#f472b6"/>
+              <text x="380" y="105" fill="#ffffff" font-family="sans-serif" font-size="9" font-weight="bold" text-anchor="middle">Tidak Bisa Korupsi</text>
+              <rect x="115" y="120" width="160" height="22" rx="4" fill="#dc2626"/>
+              <text x="195" y="135" fill="#fee2e2" font-family="sans-serif" font-size="9" text-anchor="middle">3. Penindakan Korupsi</text>
+              <rect x="315" y="120" width="130" height="22" rx="4" fill="#1d4ed8"/>
+              <text x="380" y="135" fill="#ffffff" font-family="sans-serif" font-size="9" font-weight="bold" text-anchor="middle">Takut Korupsi</text>
+              <rect x="30" y="185" width="540" height="50" rx="6" fill="#0284c7"/>
+              <circle cx="135" cy="162" r="11" fill="#fde68a"/>
+              <rect x="120" y="175" width="30" height="26" rx="5" fill="#f8fafc"/>
+              <circle cx="225" cy="162" r="11" fill="#fde68a"/>
+              <rect x="210" y="175" width="30" height="26" rx="5" fill="#94a3b8"/>
+              <circle cx="385" cy="162" r="11" fill="#fde68a"/>
+              <rect x="370" y="175" width="30" height="26" rx="5" fill="#78350f"/>
+              <circle cx="465" cy="162" r="11" fill="#fde68a"/>
+              <rect x="450" y="175" width="30" height="26" rx="5" fill="#991b1b"/>
+            </svg>
+            <div class="px-4 py-2 bg-slate-800 text-slate-200 text-xs text-center italic">
+              Ilustrasi Forum Diskusi: (Pertemuan untuk mendengarkan pendapat para ahli/narasumber)
+            </div>
+          </div>
+        `,
+        question: "Gambar di bawah ini merupakan jenis diskusi ……… <em>(Pertemuan untuk mendengarkan pendapat)</em>",
+        options: [
+          "seminar",
+          "sarasehan",
+          "simposium",
+          "muktamar"
+        ],
+        answerKey: 0
+      },
+      {
+        id: 6,
+        type: "pg",
+        passageTitle: null,
+        passageText: null,
+        illustrationSvg: `
+          <div class="my-3 rounded-2xl overflow-hidden border border-slate-200 bg-amber-950 max-w-xl">
+            <svg viewBox="0 0 600 250" class="w-full h-auto block" xmlns="http://www.w3.org/2000/svg">
+              <rect width="600" height="250" fill="#78350f"/>
+              <rect x="215" y="15" width="170" height="85" rx="4" fill="#fef08a" stroke="#451a03" stroke-width="3"/>
+              <text x="300" y="52" fill="#451a03" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">SIDANG PLENO</text>
+              <text x="300" y="68" fill="#713f12" font-family="sans-serif" font-size="9" text-anchor="middle">Perwakilan Organisasi</text>
+              <rect x="185" y="108" width="230" height="24" rx="4" fill="#451a03"/>
+              <path d="M 110 135 A 190 95 0 0 0 490 135" fill="none" stroke="#1e293b" stroke-width="26" stroke-linecap="round"/>
+              <path d="M 110 135 A 190 95 0 0 0 490 135" fill="none" stroke="#92400e" stroke-width="18" stroke-linecap="round"/>
+              <circle cx="335" cy="142" r="8" fill="#fde68a"/>
+              <rect x="327" y="151" width="16" height="24" rx="3" fill="#0f172a"/>
+              <circle cx="115" cy="130" r="6" fill="#f8fafc"/>
+              <circle cx="135" cy="162" r="6" fill="#dc2626"/>
+              <circle cx="175" cy="190" r="6" fill="#f8fafc"/>
+              <circle cx="425" cy="190" r="6" fill="#dc2626"/>
+              <circle cx="465" cy="162" r="6" fill="#f8fafc"/>
+              <circle cx="485" cy="130" r="6" fill="#dc2626"/>
+            </svg>
+            <div class="px-4 py-2 bg-stone-900 text-amber-100 text-xs text-center italic">
+              Ilustrasi Forum Diskusi: (Diskusi besar yang dihadiri para perwakilan organisasi)
+            </div>
+          </div>
+        `,
+        question: "Gambar di bawah ini merupakan jenis diskusi…. <em>(Diskusi yang dihadiri para organisasi)</em>",
+        options: [
+          "symposium",
+          "seminar",
+          "kongres",
+          "sarasehan"
+        ],
+        answerKey: 2
+      },
+      {
+        id: 7,
+        type: "pg_kompleks",
+        passageTitle: "SIMULASI 1 — Dilema Pariwisata Massal: Antara Pertumbuhan Ekonomi dan Pelestarian Lingkungan",
+        passageText: `<p class="mb-3">Sektor pariwisata seringkali diandalkan sebagai motor penggerak utama pertumbuhan ekonomi daerah maupun nasional. Masuknya wisatawan dalam jumlah besar (pariwisata massal) mendatangkan devisa, membuka lapangan kerja baru bagi warga lokal, serta memicu pembangunan infrastruktur yang pesat. Namun, di balik geliat ekonomi tersebut, pariwisata massal menyimpan ancaman serius terhadap kelestarian ekosistem dan keaslian budaya lokal.</p>
+        <p class="mb-3">Para pendukung pariwisata massal berargumen bahwa industri ini memberikan efek ganda (<em>multiplier effect</em>) yang luas. Pendapatan daerah meningkat tajam, UMKM setempat hidup, dan hotel-hotel serta restoran menyerap banyak tenaga kerja. Tanpa adanya kunjungan massal, banyak komunitas lokal di daerah terpencil yang akan kesulitan keluar dari jerat kemiskinan.</p>
+        <p>Sebaliknya, para pengamat lingkungan dan budayawan menyoroti dampak buruk yang ditimbulkannya. Lonjakan wisatawan kerap memicu krisis air bersih, penumpukan sampah plastik di destinasi alam, serta kerusakan terumbu karang akibat aktivitas selam yang tidak terkontrol. Selain itu, komersialisasi budaya demi memuaskan selera wisatawan sering kali mengikis nilai-nilai sakral dan keaslian tradisi masyarakat setempat. Oleh karena itu, penerapan pariwisata berkelanjutan (<em>sustainable tourism</em>) menjadi harga mati. Pengelola destinasi harus mampu menyeimbangkan target profit ekonomi dengan daya dukung lingkungan (<em>carrying capacity</em>) agar keindahan alam tidak musnah di tengah jalan.</p>`,
+        question: "Berdasarkan teks di atas, manakah <strong>dua pernyataan</strong> yang merupakan dampak positif dari pariwisata massal? <em>(Pilihlah dua jawaban yang benar)</em>",
+        options: [
+          "menurunkan biaya perawatan infrastruktur publik secara signifikan di daerah wisata.",
+          "memicu peningkatan pendapatan daerah melalui devisa dan sektor perdagangan lokal.",
+          "membuka lapangan pekerjaan baru bagi masyarakat di sekitar destinasi wisata.",
+          "menjaga keaslian budaya lokal agar tidak terkikis oleh modernisasi."
+        ],
+        answerKey: [1, 2]
+      },
+      {
+        id: 8,
+        type: "pg",
+        passageTitle: null,
+        passageText: null,
+        question: "Pendapat pro berupa reaksi yang baik, positif atau setuju terhadap suatu hal. Sementara itu pendapat kontra berupa reaksi negatif, menentang, atau tidak setuju terhadap sesuatu hal. Pendapat pro dan kontra wajar terjadi, setiap orang memiliki latar belakang yang berbeda-beda, baik pola pikir, pendidikan maupun sudut pandang sehingga reaksi dan pendapatnya terhadap suatu hal juga berbeda. Berdasarkan kalimat di atas argumen pro di bawah ini adalah….",
+        options: [
+          "wali kota Gorontalo, Adhan Dambea berharap gerakan pungut sampah (GPS) menjadi budaya rutin warga Gorontalo.",
+          "warga Gorontalo menyambut ide GPS ini dengan melakukannya setiap hari.",
+          "akan tetapi, ada juga orang beranggapan GPS hanya gerakan sesaat.",
+          "warga Gorontalo menyambut ide tersebut akan tetapi tidak semua masyarakat setuju."
+        ],
+        answerKey: 1
+      },
+      {
+        id: 9,
+        type: "pg",
+        passageTitle: "Dilema Penggunaan Kecerdasan Buatan (AI)",
+        passageText: `<p>Perkembangan teknologi kecerdasan buatan (<em>Artificial Intelligence</em> atau AI) seperti ChatGPT dan berbagai asisten virtual lainnya kini merambah dunia pendidikan dengan sangat cepat. Kehadiran teknologi ini memicu perdebatan sengit di kalangan pendidik, orang tua, dan pelajar mengenai dampak positif dan negatifnya terhadap proses belajar-mengajar. Di satu sisi, banyak pihak mendukung pemanfaatan AI di sekolah dan perguruan tinggi. Kelompok pro berargumen bahwa AI dapat bertindak sebagai tutor personal yang siap membantu murid memahami materi pelajaran yang sulit kapan saja dan di mana saja. AI juga dinilai mampu meningkatkan efisiensi waktu belajar, merangsang kreativitas, serta mempersiapkan murid menghadapi era disrupsi teknologi di masa depan. Menurut mereka, alih-alih melarang, sekolah justru harus mengajarkan cara memanfaatkan AI secara etis dan bijak. Namun, di sisi lain, kelompok kontra menyampaikan kekhawatiran yang mendalam. Mereka menilai bahwa ketergantungan yang berlebihan pada AI dapat menurunkan kemampuan berpikir kritis, kreativitas murni, dan keterampilan menulis murid. Banyak pelajar dikhawatirkan akan menggunakan AI secara instan untuk menyelesaikan tugas sekolah atau ujian tanpa benar-benar memahami substansi materinya. Selain itu, isu plagiarisme, lunturnya nilai kejujuran akademik, serta potensi kesenjangan akses teknologi antar murid di daerah terpencil menjadi ancaman nyata yang tidak boleh diabaikan. Pada akhirnya, kecerdasan buatan adalah pisau bermata dua. Larangan total terhadap penggunaan AI di lingkungan pendidikan bukanlah solusi yang efektif karena teknologi akan terus berkembang. Oleh karena itu, diperlukan kebijakan adaptif dari institusi pendidikan berupa regulasi penggunaan yang jelas, penyesuaian sistem evaluasi pembelajaran agar lebih menguji penalaran kritis, serta edukasi literasi digital yang masif bagi seluruh warga sekolah.</p>`,
+        question: "Berdasarkan teks diskusi di atas, argumen utama yang dikemukakan oleh kelompok yang mendukung (pro) penggunaan AI di dunia pendidikan adalah….",
+        options: [
+          "AI dapat menggantikan peran guru sepenuhnya di dalam kelas sehingga biaya pendidikan menjadi lebih murah dan mempermudah murid untuk melakukan plagiarisme tugas sekolah.",
+          "AI berfungsi sebagai tutor personal yang membantu pemahaman materi serta mempersiapkan murid menghadapi era teknologi.",
+          "AI dapat menyelesaikan seluruh ujian sekolah secara otomatis tanpa bantuan manusia.",
+          "AI menghilangkan segala bentuk kesenjangan sosial dan ekonomi antar murid di berbagai daerah."
+        ],
+        answerKey: 1
+      },
+      {
+        id: 10,
+        type: "pg",
+        passageTitle: "Dilema Penggunaan Kecerdasan Buatan (AI)",
+        passageText: `<p>Perkembangan teknologi kecerdasan buatan (<em>Artificial Intelligence</em> atau AI) seperti ChatGPT dan berbagai asisten virtual lainnya kini merambah dunia pendidikan dengan sangat cepat. Kehadiran teknologi ini memicu perdebatan sengit di kalangan pendidik, orang tua, dan pelajar mengenai dampak positif dan negatifnya terhadap proses belajar-mengajar. Di satu sisi, banyak pihak mendukung pemanfaatan AI di sekolah dan perguruan tinggi. Kelompok pro berargumen bahwa AI dapat bertindak sebagai tutor personal yang siap membantu murid memahami materi pelajaran yang sulit kapan saja dan di mana saja. AI juga dinilai mampu meningkatkan efisiensi waktu belajar, merangsang kreativitas, serta mempersiapkan murid menghadapi era disrupsi teknologi di masa depan. Menurut mereka, alih-alih melarang, sekolah justru harus mengajarkan cara memanfaatkan AI secara etis dan bijak. Namun, di sisi lain, kelompok kontra menyampaikan kekhawatiran yang mendalam. Mereka menilai bahwa ketergantungan yang berlebihan pada AI dapat menurunkan kemampuan berpikir kritis, kreativitas murni, dan keterampilan menulis murid. Banyak pelajar dikhawatirkan akan menggunakan AI secara instan untuk menyelesaikan tugas sekolah atau ujian tanpa benar-benar memahami substansi materinya. Selain itu, isu plagiarisme, lunturnya nilai kejujuran akademik, serta potensi kesenjangan akses teknologi antar murid di daerah terpencil menjadi ancaman nyata yang tidak boleh diabaikan. Pada akhirnya, kecerdasan buatan adalah pisau bermata dua. Larangan total terhadap penggunaan AI di lingkungan pendidikan bukanlah solusi yang efektif karena teknologi akan terus berkembang. Oleh karena itu, diperlukan kebijakan adaptif dari institusi pendidikan berupa regulasi penggunaan yang jelas, penyesuaian sistem evaluasi pembelajaran agar lebih menguji penalaran kritis, serta edukasi literasi digital yang masif bagi seluruh warga sekolah.</p>`,
+        question: "Manakah kalimat dalam teks di atas yang menggunakan verba (kata kerja yang mengekspresikan sikap, pemikiran, atau perasaan)?",
+        options: [
+          "perkembangan teknologi kecerdasan buatan kini merambah dunia pendidikan dengan sangat cepat.",
+          "mereka menilai bahwa ketergantungan yang berlebihan pada AI dapat menurunkan kemampuan berpikir kritis murid.",
+          "AI dapat bertindak sebagai tutor personal yang siap membantu murid memahami materi pelajaran.",
+          "larangan total terhadap penggunaan AI di lingkungan pendidikan bukanlah solusi dan kecerdasan buatan adalah pisau bermata dua bagi dunia pendidikan modern."
+        ],
+        answerKey: 1
+      },
+      {
+        id: 11,
+        type: "pg",
+        passageTitle: "Dilema Penggunaan Kecerdasan Buatan (AI)",
+        passageText: `<p>Perkembangan teknologi kecerdasan buatan (<em>Artificial Intelligence</em> atau AI) seperti ChatGPT dan berbagai asisten virtual lainnya kini merambah dunia pendidikan dengan sangat cepat. Kehadiran teknologi ini memicu perdebatan sengit di kalangan pendidik, orang tua, dan pelajar mengenai dampak positif dan negatifnya terhadap proses belajar-mengajar. Di satu sisi, banyak pihak mendukung pemanfaatan AI di sekolah dan perguruan tinggi. Kelompok pro berargumen bahwa AI dapat bertindak sebagai tutor personal yang siap membantu murid memahami materi pelajaran yang sulit kapan saja dan di mana saja. AI juga dinilai mampu meningkatkan efisiensi waktu belajar, merangsang kreativitas, serta mempersiapkan murid menghadapi era disrupsi teknologi di masa depan. Menurut mereka, alih-alih melarang, sekolah justru harus mengajarkan cara memanfaatkan AI secara etis dan bijak. Namun, di sisi lain, kelompok kontra menyampaikan kekhawatiran yang mendalam. Mereka menilai bahwa ketergantungan yang berlebihan pada AI dapat menurunkan kemampuan berpikir kritis, kreativitas murni, dan keterampilan menulis murid. Banyak pelajar dikhawatirkan akan menggunakan AI secara instan untuk menyelesaikan tugas sekolah atau ujian tanpa benar-benar memahami substansi materinya. Selain itu, isu plagiarisme, lunturnya nilai kejujuran akademik, serta potensi kesenjangan akses teknologi antar murid di daerah terpencil menjadi ancaman nyata yang tidak boleh diabaikan. Pada akhirnya, kecerdasan buatan adalah pisau bermata dua. Larangan total terhadap penggunaan AI di lingkungan pendidikan bukanlah solusi yang efektif karena teknologi akan terus berkembang. Oleh karena itu, diperlukan kebijakan adaptif dari institusi pendidikan berupa regulasi penggunaan yang jelas, penyesuaian sistem evaluasi pembelajaran agar lebih menguji penalaran kritis, serta edukasi literasi digital yang masif bagi seluruh warga sekolah.</p>`,
+        question: "Di dalam paragraf ketiga teks tersebut terdapat pertentangan sudut pandang. Konjungsi antarkalimat atau konjungsi intraparagraf apa yang secara tersirat maupun tersurat menunjukkan perlawanan antara paragraf pro dan paragraf kontra pada paragraf tersebut adalah….",
+        options: [
+          "pada akhirnya",
+          "oleh karena itu",
+          "namun, di sisi lain",
+          "menurut mereka"
+        ],
+        answerKey: 2
+      },
+      {
+        id: 12,
+        type: "pg",
+        passageTitle: "Dilema Penggunaan Kecerdasan Buatan (AI)",
+        passageText: `<p>Perkembangan teknologi kecerdasan buatan (<em>Artificial Intelligence</em> atau AI) seperti ChatGPT dan berbagai asisten virtual lainnya kini merambah dunia pendidikan dengan sangat cepat. Kehadiran teknologi ini memicu perdebatan sengit di kalangan pendidik, orang tua, dan pelajar mengenai dampak positif dan negatifnya terhadap proses belajar-mengajar. Di satu sisi, banyak pihak mendukung pemanfaatan AI di sekolah dan perguruan tinggi. Kelompok pro berargumen bahwa AI dapat bertindak sebagai tutor personal yang siap membantu murid memahami materi pelajaran yang sulit kapan saja dan di mana saja. AI juga dinilai mampu meningkatkan efisiensi waktu belajar, merangsang kreativitas, serta mempersiapkan murid menghadapi era disrupsi teknologi di masa depan. Menurut mereka, alih-alih melarang, sekolah justru harus mengajarkan cara memanfaatkan AI secara etis dan bijak. Namun, di sisi lain, kelompok kontra menyampaikan kekhawatiran yang mendalam. Mereka menilai bahwa ketergantungan yang berlebihan pada AI dapat menurunkan kemampuan berpikir kritis, kreativitas murni, dan keterampilan menulis murid. Banyak pelajar dikhawatirkan akan menggunakan AI secara instan untuk menyelesaikan tugas sekolah atau ujian tanpa benar-benar memahami substansi materinya. Selain itu, isu plagiarisme, lunturnya nilai kejujuran akademik, serta potensi kesenjangan akses teknologi antar murid di daerah terpencil menjadi ancaman nyata yang tidak boleh diabaikan. Pada akhirnya, kecerdasan buatan adalah pisau bermata dua. Larangan total terhadap penggunaan AI di lingkungan pendidikan bukanlah solusi yang efektif karena teknologi akan terus berkembang. Oleh karena itu, diperlukan kebijakan adaptif dari institusi pendidikan berupa regulasi penggunaan yang jelas, penyesuaian sistem evaluasi pembelajaran agar lebih menguji penalaran kritis, serta edukasi literasi digital yang masif bagi seluruh warga sekolah.</p>`,
+        question: "Berdasarkan bagian kesimpulan teks di atas, solusi bijak yang ditawarkan untuk mengatasi dilema penggunaan AI di sekolah adalah….",
+        options: [
+          "melarang seluruh murid dan guru menggunakan gawai serta internet di lingkungan sekolah.",
+          "menyerahkan sepenuhnya keputusan penggunaan AI kepada masing-masing murid tanpa pengawasan.",
+          "membuat kebijakan adaptif berupa regulasi penggunaan yang jelas, penyesuaian sistem evaluasi, dan edukasi literasi digital.",
+          "mengganti semua buku pelajaran cetak dengan aplikasi AI berbayar kebijakan adaptif berupa regulasi penggunaan yang jelas."
+        ],
+        answerKey: 2
+      },
+      {
+        id: 13,
+        type: "pg",
+        passageTitle: null,
+        passageText: null,
+        question: "Kata kajian biasanya digunakan dalam konteks akademis, ilmiah, atau tulisan formal, sementara kata populer digunakan dalam percakapan sehari-hari atau tulisan yang lebih santai. Kata kajian yang tepat di bawah ini adalah….",
+        options: [
+          "akselerasi, percepatan, devinisi",
+          "berbelit, istimewa, batasan",
+          "ekspansi, paten, kompleks",
+          "wibawa, cantik, menarik"
+        ],
+        answerKey: 2
+      },
+      {
+        id: 14,
+        type: "pg_kompleks",
+        passageTitle: "Cerpen: \"Pulang ke Rumah yang Hilang\"",
+        passageText: `<p class="mb-3">Matahari hampir tenggelam di ufuk barat, menyisakan bias merah keemasan yang memantul di atas hamparan lumpur tambak udang milik Pak Ridwan. Lelaki berusia enampuluhan itu berdiri terpaku di pematang tambak sambil menggenggam sebilah arit kecil yang sudah berkarat. Angin pesisir berhembus kencang, menerbangkan helai-helai uban di kepalanya yang tak lagi tertutup topi. Sepuluh tahun sudah ia hidup dalam pengasingan batin, sejak anak semata wayangnya, Bayu, memilih pergi ke ibu kota demi mengejar mimpi menjadi seorang insinyur dan tidak pernah kembali menoleh ke belakang.</p>
+        <p class="mb-3">Bagi Pak Ridwan, tambak itu bukan sekadar sumber pencaharian, melainkan monumen kesedihan. Di sanalah setiap jengkal tanah dibelinya dari hasil keringat istrinya yang telah tiada. Namun, semenjak harga udang anjlok dan serangan hama merusak hasil panen berturut-turut, tambak seluas dua hektare itu kini berada di ambang penyitaan oleh bank desa. Pak Ridwan menolak menjualnya kepada Tengkulak Harun, meskipun lelaki kaya itu telah menawar dengan harga tinggi. Bagi Pak Ridwan, menjual tambak berarti menyerahkan sisa-sisa harga dirinya.</p>
+        <p class="mb-3">Malam mulai merangkak naik, membawa serta suara deburan ombak yang terdengar sayup-sayup dari balik muara. Pak Ridwan melangkah pelan menuju rumah panggung kayunya yang mulai lapuk termakan usia. Di ruang tamu yang remang-remang, hanya ditemani lampu pelita minyak tanah, ia membuka sebuah kotak kayu tua. Di dalam kotak itu tersimpan rapi lembaran ijazah SMA milik Bayu, beberapa foto masa kecil anaknya yang mulai menguning, dan sepucuk surat terakhir yang dikirim Bayu delapan tahun lalu sebelum nomor teleponnya tidak dapat dihubungi lagi.</p>
+        <p>Tiba-tiba, suara ketukan pintu berderit nyaring membuyarkan lamunan panjang lelaki tua itu. Pak Ridwan mengernyitkan dahi. Jarang sekali ada tamu yang datang ke rumahnya selarut ini, terlebih di tengah badai gerimis yang mulai turun. Dengan langkah diseret nyeri encok, ia membukakan pintu. Di ambang pintu, berdiri seorang lelaki jangkung berjas kusut dengan koper hitam di tangan kanannya. Rambutnya basah kuyup tersiram air hujan, wajahnya tirus, namun mata tajam itu tidak asing bagi Pak Ridwan. "Bapak..." suara lelaki itu tercekat di tenggorokan, nyaris tenggelam bersama deru angin malam. Pak Ridwan tertegun. Arit di tangannya hampir lepas. Lidahnya mendadak kelu, seolah ribuan kata amarah, rindu, dan kekecewaan yang telah ia simpan selama satu dekade menguap begitu saja digantikan debar jantung yang bergemuruh hebat di dadanya. Bayu telah kembali, berdiri tepat di hadapannya dalam balutan penyesalan yang pekat.</p>`,
+        question: "Berdasarkan teks cerpen di atas, manakah di antara pernyataan berikut yang merupakan gambaran watak tokoh Pak Ridwan? <em>(Pilih lebih dari satu jawaban)</em>",
+        options: [
+          "memiliki pendirian yang teguh dan menjunjung tinggi harga diri meskipun berada dalam kesusahan ekonomi.",
+          "bersikap mudah menyerah dan langsung menjual seluruh tanah warisannya kepada Tengkulak Harun demi uang instan.",
+          "seorang ayah yang menyimpan rasa rindu mendalam meskipun dibalut dengan kekecewaan masa lalu terhadap anaknya.",
+          "acuh tak acuh terhadap masa depan keluarganya dan tidak peduli pada kenangan bersama mendiang istrinya."
+        ],
+        answerKey: [0, 2]
+      },
+      {
+        id: 15,
+        type: "pg",
+        passageTitle: "Cerpen: \"Pulang ke Rumah yang Hilang\"",
+        passageText: `<p class="mb-3">Matahari hampir tenggelam di ufuk barat, menyisakan bias merah keemasan yang memantul di atas hamparan lumpur tambak udang milik Pak Ridwan. Lelaki berusia enampuluhan itu berdiri terpaku di pematang tambak sambil menggenggam sebilah arit kecil yang sudah berkarat. Angin pesisir berhembus kencang, menerbangkan helai-helai uban di kepalanya yang tak lagi tertutup topi. Sepuluh tahun sudah ia hidup dalam pengasingan batin, sejak anak semata wayangnya, Bayu, memilih pergi ke ibu kota demi mengejar mimpi menjadi seorang insinyur dan tidak pernah kembali menoleh ke belakang.</p>
+        <p class="mb-3">Bagi Pak Ridwan, tambak itu bukan sekadar sumber pencaharian, melainkan monumen kesedihan. Di sanalah setiap jengkal tanah dibelinya dari hasil keringat istrinya yang telah tiada. Namun, semenjak harga udang anjlok dan serangan hama merusak hasil panen berturut-turut, tambak seluas dua hektare itu kini berada di ambang penyitaan oleh bank desa. Pak Ridwan menolak menjualnya kepada Tengkulak Harun, meskipun lelaki kaya itu telah menawar dengan harga tinggi. Bagi Pak Ridwan, menjual tambak berarti menyerahkan sisa-sisa harga dirinya.</p>
+        <p class="mb-3">Malam mulai merangkak naik, membawa serta suara deburan ombak yang terdengar sayup-sayup dari balik muara. Pak Ridwan melangkah pelan menuju rumah panggung kayunya yang mulai lapuk termakan usia. Di ruang tamu yang remang-remang, hanya ditemani lampu pelita minyak tanah, ia membuka sebuah kotak kayu tua. Di dalam kotak itu tersimpan rapi lembaran ijazah SMA milik Bayu, beberapa foto masa kecil anaknya yang mulai menguning, dan sepucuk surat terakhir yang dikirim Bayu delapan tahun lalu sebelum nomor teleponnya tidak dapat dihubungi lagi.</p>
+        <p>Tiba-tiba, suara ketukan pintu berderit nyaring membuyarkan lamunan panjang lelaki tua itu. Pak Ridwan mengernyitkan dahi. Jarang sekali ada tamu yang datang ke rumahnya selarut ini, terlebih di tengah badai gerimis yang mulai turun. Dengan langkah diseret nyeri encok, ia membukakan pintu. Di ambang pintu, berdiri seorang lelaki jangkung berjas kusut dengan koper hitam di tangan kanannya. Rambutnya basah kuyup tersiram air hujan, wajahnya tirus, namun mata tajam itu tidak asing bagi Pak Ridwan. "Bapak..." suara lelaki itu tercekat di tenggorokan, nyaris tenggelam bersama deru angin malam. Pak Ridwan tertegun. Arit di tangannya hampir lepas. Lidahnya mendadak kelu, seolah ribuan kata amarah, rindu, dan kekecewaan yang telah ia simpan selama satu dekade menguap begitu saja digantikan debar jantung yang bergemuruh hebat di dadanya. Bayu telah kembali, berdiri tepat di hadapannya dalam balutan penyesalan yang pekat.</p>`,
+        question: "Perhatikan unsur latar tempat dan suasana dalam cerpen di atas! Pasangan latar dan suasana yang paling akurat menggambarkan bagian awal hingga pertengahan cerita adalah....",
+        options: [
+          "latar tempat di perkotaan modern; suasana ceria dan penuh kemeriahan pesta malam.",
+          "latar tempat di pesisir tambak dan rumah panggung tua; suasana senyap, muram, penuh kesepian dan kecemasan.",
+          "latar tempat di ruang kelas sekolah dasar; suasana tegang menjelang ujian akhir nasional.",
+          "latar tempat di kantor bank desa; suasana riuh rendah para nasabah yang antre membayar utang."
+        ],
+        answerKey: 1
+      },
+      {
+        id: 16,
+        type: "benar_salah",
+        passageTitle: "Mengaplikasikan Sunnah Nabi dalam Adab Makan dan Minum di Era Modern",
+        passageText: `<p class="mb-3">Di tengah kemajuan zaman dan gaya hidup serba instan, cara seseorang mengonsumsi makanan dan minuman kerap kali mengalami pergeseran. Banyak orang mengabaikan adab tradisional demi efisiensi, seperti makan sambil berdiri atau terburu-buru. Padahal, Islam telah mengajarkan sunnah Nabi Muhammad SAW mengenai adab makan dan minum yang tidak hanya bernilai ibadah, tetapi juga terbukti secara medis memberikan manfaat bagi kesehatan. Topik mengenai penerapan sunnah makan dan minum Nabi ini sering kali memicu perdebatan antara pentingnya melestarikan tradisi kenabian dan tuntutan fleksibilitas hidup modern.</p>
+        <p class="mb-3">Pihak yang mendukung penerapan sunnah Nabi dalam makan dan minum meyakini bahwa sunnah tersebut memiliki hikmah yang luar biasa bagi tubuh. Beberapa sunnah yang populer antara lain duduk saat makan dan minum, menggunakan tangan kanan, bernapas di luar wadah saat minum, serta tidak makan hingga terlalu kenyang (membagi kapasitas perut menjadi tiga bagian: makanan, air, dan udara). Dari sudut pandang medis modern, minum dalam posisi duduk mencegah tekanan berlebih pada dinding kerongkongan dan ginjal. Selain itu, makan dengan porsi yang tidak berlebihan (sesuai sunnah) dapat mencegah obesitas, gangguan pencernaan, serta menjaga kestabilan kadar gula darah. Oleh karena itu, melestarikan sunnah ini merupakan bentuk kepatuhan beragama sekaligus investasi kesehatan jangka panjang.</p>
+        <p class="mb-3">Di sisi lain, terdapat kelompok yang berpandangan bahwa beberapa sunnah terkait cara makan dan minum bersifat fleksibel atau menyesuaikan situasi dan kondisi (<em>urf</em> atau kebiasaan). Misalnya, dalam situasi tertentu seperti di pesta prasmanan (<em>buffet</em>) yang padat, berdiri saat makan atau minum terkadang menjadi satu-satunya pilihan yang praktis.</p>
+        <p class="mb-3">Mereka berpendapat bahwa yang terpenting dalam Islam adalah kehalalan makanan, mengucapkan basmalah, dan rasa syukur, sementara teknis posisi tubuh atau penggunaan tangan kiri dalam situasi darurat tidak perlu diperdebatkan secara kaku. Bagi mereka, memaksakan tata cara tradisional di ruang publik modern justru dapat menghambat mobilitas sosial seseorang.</p>
+        <p>Meskipun terdapat perbedaan pandangan mengenai fleksibilitas penerapannya dalam situasi modern, sebagian besar ulama dan ahli kesehatan sepakat bahwa sunnah Nabi dalam makan dan minum mengandung nilai-nilai luhur yang sangat bermanfaat. Duduk saat makan dan minum serta menjaga porsi agar tidak berlebihan adalah bentuk disiplin diri yang ideal untuk diterapkan kapan pun memungkinkan, tanpa harus mengurangi esensi rasa syukur kepada Sang Pencipta.</p>`,
+        question: "Tentukan kebenaran dari setiap pernyataan berikut berdasarkan teks diskusi di atas!",
+        statements: [
+          "Berdasarkan sudut pandang medis dalam teks, posisi berdiri saat makan dan minum jauh lebih disarankan karena memperlancar pencernaan.",
+          "Bagian kesimpulan teks menyatakan bahwa mempraktikkan sunnah makan dan minum secara kaku adalah satu-satunya cara mutlak untuk bersyukur.",
+          "Kelompok yang kontra berpendapat bahwa dalam kondisi tertentu yang tidak memungkinkan, tata cara makan dapat menyesuaikan situasi (bersifat fleksibel)."
+        ],
+        answerKey: ["S", "S", "B"]
+      },
+      {
+        id: 17,
+        type: "benar_salah",
+        passageTitle: "Mengaplikasikan Sunnah Nabi dalam Adab Makan dan Minum di Era Modern",
+        passageText: `<p class="mb-3">Di tengah kemajuan zaman dan gaya hidup serba instan, cara seseorang mengonsumsi makanan dan minuman kerap kali mengalami pergeseran. Banyak orang mengabaikan adab tradisional demi efisiensi, seperti makan sambil berdiri atau terburu-buru. Padahal, Islam telah mengajarkan sunnah Nabi Muhammad SAW mengenai adab makan dan minum yang tidak hanya bernilai ibadah, tetapi juga terbukti secara medis memberikan manfaat bagi kesehatan. Topik mengenai penerapan sunnah makan dan minum Nabi ini sering kali memicu perdebatan antara pentingnya melestarikan tradisi kenabian dan tuntutan fleksibilitas hidup modern.</p>
+        <p class="mb-3">Pihak yang mendukung penerapan sunnah Nabi dalam makan dan minum meyakini bahwa sunnah tersebut memiliki hikmah yang luar biasa bagi tubuh. Beberapa sunnah yang populer antara lain duduk saat makan dan minum, menggunakan tangan kanan, bernapas di luar wadah saat minum, serta tidak makan hingga terlalu kenyang (membagi kapasitas perut menjadi tiga bagian: makanan, air, dan udara). Dari sudut pandang medis modern, minum dalam posisi duduk mencegah tekanan berlebih pada dinding kerongkongan dan ginjal. Selain itu, makan dengan porsi yang tidak berlebihan (sesuai sunnah) dapat mencegah obesitas, gangguan pencernaan, serta menjaga kestabilan kadar gula darah. Oleh karena itu, melestarikan sunnah ini merupakan bentuk kepatuhan beragama sekaligus investasi kesehatan jangka panjang.</p>
+        <p class="mb-3">Di sisi lain, terdapat kelompok yang berpandangan bahwa beberapa sunnah terkait cara makan dan minum bersifat fleksibel atau menyesuaikan situasi dan kondisi (<em>urf</em> atau kebiasaan). Misalnya, dalam situasi tertentu seperti di pesta prasmanan (<em>buffet</em>) yang padat, berdiri saat makan atau minum terkadang menjadi satu-satunya pilihan yang praktis.</p>
+        <p class="mb-3">Mereka berpendapat bahwa yang terpenting dalam Islam adalah kehalalan makanan, mengucapkan basmalah, dan rasa syukur, sementara teknis posisi tubuh atau penggunaan tangan kiri dalam situasi darurat tidak perlu diperdebatkan secara kaku. Bagi mereka, memaksakan tata cara tradisional di ruang publik modern justru dapat menghambat mobilitas sosial seseorang.</p>
+        <p>Meskipun terdapat perbedaan pandangan mengenai fleksibilitas penerapannya dalam situasi modern, sebagian besar ulama dan ahli kesehatan sepakat bahwa sunnah Nabi dalam makan dan minum mengandung nilai-nilai luhur yang sangat bermanfaat. Duduk saat makan dan minum serta menjaga porsi agar tidak berlebihan adalah bentuk disiplin diri yang ideal untuk diterapkan kapan pun memungkinkan, tanpa harus mengurangi esensi rasa syukur kepada Sang Pencipta.</p>`,
+        question: "Tentukan kebenaran dari setiap pernyataan berikut mengenai bagian akhir (simpulan) dan karakteristik teks di atas!",
+        statements: [
+          "\"Islam adalah kehalalan makanan, mengucapkan basmalah, dan rasa syukur, sementara teknis posisi tubuh atau penggunaan tangan kiri dalam situasi darurat tidak perlu diperdebatkan secara kaku. Bagi mereka, memaksakan tata cara tradisional di ruang publik modern justru dapat menghambat mobilitas sosial seseorang.\"",
+          "\"Meskipun terdapat perbedaan pandangan mengenai fleksibilitas penerapannya dalam situasi modern, sebagian besar ulama dan ahli kesehatan sepakat bahwa sunnah Nabi dalam makan dan minum mengandung nilai-nilai luhur yang sangat bermanfaat. Duduk saat makan dan minum serta menjaga porsi agar tidak berlebihan adalah bentuk disiplin diri yang ideal untuk diterapkan kapan pun memungkinkan, tanpa harus mengurangi esensi rasa syukur kepada Sang Pencipta.\"",
+          "\"Pihak yang mendukung penerapan sunnah Nabi dalam makan dan minum meyakini bahwa sunnah tersebut memiliki hikmah yang luar biasa bagi tubuh. Beberapa sunnah yang populer antara lain duduk saat makan dan minum, menggunakan tangan kanan, bernapas di luar wadah saat minum, serta tidak makan hingga terlalu kenyang (membagi kapasitas perut menjadi tiga bagian: makanan, air, dan udara).\""
+        ],
+        answerKey: ["S", "B", "S"]
+      },
+      {
+        id: 18,
+        type: "benar_salah",
+        passageTitle: "Integrasi Media Sosial dalam Pembelajaran",
+        passageText: "Penggunaan media sosial seperti Instagram, TikTok, dan X (Twitter) telah merambah ke berbagai aspek kehidupan, termasuk dunia pendidikan. Sejumlah pendidik mulai mempertimbangkan untuk mengintegrasikan platform-platform ini sebagai alat wajib dalam proses pembelajaran, dengan harapan membuat materi lebih menarik dan relevan. Namun, kebijakan ini menimbulkan perdebatan sengit di kalangan siswa, orang tua, dan guru mengenai dampak positif dan risiko negatifnya.",
+        question: "Pilihlah jawaban <strong>Benar</strong> atau <strong>Salah</strong> dalam menentukan struktur teks diskusi di bawah ini!",
+        statements: [
+          "Pertama, media sosial meningkatkan keterlibatan murid. Murid yang sudah terbiasa berinteraksi di platform tersebut akan lebih termotivasi untuk belajar, misalnya melalui pembuatan video edukatif pendek (TikTok atau Reels) atau diskusi grup di fitur polling. Oleh karena itu, materi yang sulit diserap di kelas bisa menjadi lebih mudah dipahami. <strong>(kontra)</strong>",
+          "Sebaiknya sekolah tidak mewajibkan penggunaan akun pribadi murid. Sekolah dapat menyediakan platform atau akun khusus yang dikelola guru dan digunakan hanya untuk tujuan edukasi. Dengan demikian, manfaat dari media sosial bisa didapatkan, sementara risiko gangguan dan masalah privasi dapat diminimalkan. <strong>(isu)</strong>",
+          "Satu hal yang pasti adalah potensi gangguan yang besar. Notifikasi yang terus-menerus dari media sosial sangat mengganggu konsentrasi. Siswa akan mudah beralih dari tugas pendidikan ke konten hiburan, sehingga waktu belajar mereka menjadi tidak efektif. <strong>(kesimpulan)</strong>"
+        ],
+        answerKey: ["S", "S", "S"]
+      },
+      {
+        id: 19,
+        type: "benar_salah",
+        passageTitle: null,
+        passageText: null,
+        question: "Secara umum, pembelajaran diskusi adalah metode mengajar yang melibatkan pertukaran gagasan, pendapat, dan informasi antara peserta didik (murid) dengan guru, atau antar sesama peserta didik, untuk membahas dan memecahkan suatu permasalahan atau topik materi tertentu. Pilihlah jawaban <strong>Benar</strong> atau <strong>Salah</strong> pada jenis diskusi di bawah ini!",
+        statements: [
+          "Sebuah pertemuan atau forum diskusi yang bersifat formal, terstruktur, dan ilmiah yang diselenggarakan untuk membahas, mendengarkan, atau mempresentasikan topik tertentu yang berkaitan dengan bidang ilmu, profesi, atau isu spesifik. <strong>(Panel)</strong>",
+          "Pertemuan ilmiah yang lebih menekankan pada aktivitas praktis, kolaborasi intensif, dan pemecahan masalah (<em>problem-solving</em>) secara bersama-sama oleh para ahli atau peserta yang memiliki bidang keahlian atau minat yang sama. <strong>(seminar)</strong>",
+          "Serangkaian presentasi atau pidato pendek yang disampaikan oleh beberapa pembicara (ahli) mengenai berbagai aspek dari satu topik atau subjek yang sama. <strong>(lokakarya)</strong>"
+        ],
+        answerKey: ["S", "S", "S"]
+      },
+      {
+        id: 20,
+        type: "benar_salah",
+        passageTitle: "Penggalan Akhir Cerpen",
+        passageText: "<em>\"Pak Tua itu menatap nanar koin terakhir di telapak tangannya. Di luar, salju semakin tebal menimbun jejak kaki di trotoar. Ia menarik napas panjang, lalu melangkah perlahan membuka pintu kedai kopi yang mulai gelap.\"</em>",
+        question: "Pilihlah jawaban <strong>Benar</strong> atau <strong>Salah</strong> pada ciri-ciri cerpen di bawah ini!",
+        statements: [
+          "Cerpen memiliki jumlah kata yang relatif singkat dan biasanya dapat selesai dibaca dalam sekali duduk (sekitar 10 hingga 30 menit).",
+          "Alur cerita dalam cerpen sangat kompleks dan panjang, mencakup seluruh perjalanan hidup tokoh utama sejak lahir hingga akhir hayatnya.",
+          "Ruang lingkup latar tempat dan waktu dalam cerpen sangat luas, berpindah-pindah antarnegara selama puluhan tahun."
+        ],
+        answerKey: ["B", "S", "S"]
+      },
+      {
+        id: 21,
+        type: "esai",
+        passageTitle: null,
+        passageText: null,
+        question: "Buatkan teks diskusi berdasarkan struktur dan kaidah kebahasaan!",
+        placeholder: "Tuliskan teks diskusi lengkap beserta bagian Isu, Argumen Pro, Argumen Kontra, dan Simpulan/Saran...",
+        rows: 8
+      },
+      {
+        id: 22,
+        type: "esai_tabel",
+        passageTitle: null,
+        passageText: null,
+        question: "Buatkan tabel kata kajian (10) dan kata populer (10)!",
+        rowCount: 10
+      },
+      {
+        id: 23,
+        type: "esai",
+        passageTitle: null,
+        passageText: null,
+        question: "Buatkan 5 kalimat menggunakan konjungsi antarkalimat!",
+        placeholder: "Tuliskan 5 kalimat yang menggunakan konjungsi antarkalimat (contoh: Oleh karena itu, Namun, Dengan demikian, Akan tetapi, Selain itu)...",
+        rows: 7
+      },
+      {
+        id: 24,
+        type: "esai",
+        passageTitle: null,
+        passageText: null,
+        question: "Tuliskan cerpen anak memenuhi kriteria penulisan (600 kata)!",
+        placeholder: "Tuliskan judul dan isi cerpen anak Anda secara lengkap di sini...",
+        rows: 12,
+        showWordCount: true,
+        targetWords: 600
+      },
+      {
+        id: 25,
+        type: "esai",
+        passageTitle: null,
+        passageText: null,
+        question: "Jelaskan jenis teks diskusi sarasehan dan lokakarya!",
+        placeholder: "Jelaskan pengertian, tujuan, dan perbedaan antara sarasehan dan lokakarya...",
+        rows: 6
+      }
+    ];
+
+    const FALLBACK_STUDENTS = [
+      "A. Aisyah Humaira Nurmuhammad",
+      "Adlina Nur Sabrina Jusuf",
+      "Aisyah Khumairoh Suleman",
+      "Alif Firmansyah Monoarfa",
+      "Arafah Putra Ibrahim",
+      "Azdah Adzkia Muhiddin",
+      "Dimas Nasir Potale",
+      "Faizah Jihaada Puteri",
+      "Fathiyyah Naailah Abdullah",
+      "Lutfiah Nur Magfirah Pakaya",
+      "Muhammad Faiz Dako",
+      "Muhammad Jibran Nur Saleh",
+      "Nafilah Adzhimah Badja",
+      "Najmah Fadhilah Munawar",
+      "Nida' Husniah R. Ma'Ruf",
+      "Nurul Istiqomah R. Ali",
+      "Rizya Chamasya Usman",
+      "Shofiyyah Sholihah Adam",
+      "Zuhairah Diniyyah Atifa"
+    ];
+
+    const FALLBACK_SUBJECTS = [
+      "BAHASA INDONESIA"
+    ];
+
+    let allStudents = [];
+    let allSubjects = [];
+    let serverSubmittedList = [];
+
+    let currentSession = null;
+    let currentIndex = 0;
+    let timerInterval = null;
+    let isSubmitting = false;
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      await fetchInitialData(false);
+      restoreActiveSessionIfAny();
+    });
+
+    async function fetchInitialData(manualRefresh = false) {
+      const badgeEl = document.getElementById("connection-badge");
+
+      showLoader(
+        "Mengambil Data Peserta...",
+        "Memuat daftar nama siswa dan mata pelajaran dari Google Spreadsheet..."
+      );
+
+      const isPlaceholderUrl = !GAS_URL || GAS_URL.includes("MASUKKAN_URL_WEB_APP_GAS_DI_SINI");
+
+      if (isPlaceholderUrl) {
+        await new Promise((r) => setTimeout(r, 450));
+        allStudents = [...FALLBACK_STUDENTS].sort((a, b) => a.localeCompare(b));
+        allSubjects = [...FALLBACK_SUBJECTS];
+        populateStudentDropdown(allStudents);
+        populateSubjectDropdown(allSubjects);
+
+        badgeEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200";
+        badgeEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Mode Preview (GAS_URL belum diisi)</span>`;
+        hideLoader();
+        checkSubmissionEligibility();
+        return;
+      }
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: "GET",
+          redirect: "follow"
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        let rawStudents = data.daftarSiswa || data.students || data.siswa || data.namaSiswa || data.names || [];
+        let rawSubjects = data.daftarMapel || data.subjects || data.mapel || data.mataPelajaran || [];
+        let rawSubmitted = data.sudahUjian || data.submitted || data.riwayat || [];
+
+        if (Array.isArray(rawStudents) && rawStudents.length > 0) {
+          allStudents = rawStudents
+            .map((item) => (typeof item === "string" ? item.trim() : (item.nama || item.name || "").trim()))
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b));
+        } else {
+          allStudents = [...FALLBACK_STUDENTS];
+        }
+
+        if (Array.isArray(rawSubjects) && rawSubjects.length > 0) {
+          allSubjects = rawSubjects
+            .map((item) => (typeof item === "string" ? item.trim() : (item.mapel || item.subject || "").trim()))
+            .filter(Boolean);
+        } else {
+          allSubjects = [...FALLBACK_SUBJECTS];
+        }
+
+        if (Array.isArray(rawSubmitted)) {
+          serverSubmittedList = rawSubmitted.map((item) => ({
+            nama: (item.nama || item.namaSiswa || "").toLowerCase().trim(),
+            mapel: (item.mapel || item.mataPelajaran || "").toLowerCase().trim()
+          }));
+        }
+
+        populateStudentDropdown(allStudents);
+        populateSubjectDropdown(allSubjects);
+
+        badgeEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200";
+        badgeEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Terhubung ke Server</span>`;
+
+        if (manualRefresh) {
+          showModal({
+            title: "Data Berhasil Diperbarui",
+            message: `Berhasil memuat <strong>${allStudents.length}</strong> nama siswa dan <strong>${allSubjects.length}</strong> mata pelajaran dari server sekolah.`,
+            type: "success",
+            buttons: [{ label: "Tutup", primary: true }]
+          });
+        }
+      } catch (err) {
+        console.error("Gagal memuat data dari GAS_URL:", err);
+        allStudents = [...FALLBACK_STUDENTS];
+        allSubjects = [...FALLBACK_SUBJECTS];
+        populateStudentDropdown(allStudents);
+        populateSubjectDropdown(allSubjects);
+
+        badgeEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200";
+        badgeEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Offline / Fallback Data</span>`;
+
+        if (manualRefresh) {
+          showModal({
+            title: "Koneksi Server Terkendala",
+            message: "Tidak dapat menjangkau server Google Apps Script saat ini. Daftar cadangan lokal ditampilkan sementara.",
+            type: "warning",
+            buttons: [{ label: "Mengerti", primary: true }]
+          });
+        }
+      } finally {
+        hideLoader();
+        checkSubmissionEligibility();
+      }
+    }
+
+    function populateStudentDropdown(list) {
+      const select = document.getElementById("student-select");
+      const currentVal = select.value;
+      select.innerHTML = `<option value="">-- Pilih Nama Lengkap Anda (${list.length} Siswa) --</option>`;
+
+      list.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        if (name === currentVal) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      document.getElementById("student-count-hint").textContent =
+        list.length === 0
+          ? "Tidak ada nama siswa yang cocok dengan pencarian Anda."
+          : `Tersedia ${list.length} nama siswa. Pilih nama Anda dari daftar di atas.`;
+    }
+
+    function populateSubjectDropdown(list) {
+      const select = document.getElementById("subject-select");
+      select.innerHTML = "";
+      list.forEach((subj) => {
+        const opt = document.createElement("option");
+        opt.value = subj;
+        opt.textContent = subj.toUpperCase() === "BAHASA INDONESIA"
+          ? "BAHASA INDONESIA — Kelas XI / Fase F"
+          : subj;
+        if (subj.toUpperCase() === "BAHASA INDONESIA") {
+          opt.selected = true;
+        }
+        select.appendChild(opt);
+      });
+    }
+
+    function filterStudentDropdown() {
+      const query = document.getElementById("student-search").value.toLowerCase().trim();
+      const filtered = allStudents.filter((name) => name.toLowerCase().includes(query));
+      populateStudentDropdown(filtered);
+      if (filtered.length === 1) {
+        document.getElementById("student-select").value = filtered[0];
+      }
+      checkSubmissionEligibility();
+    }
+
+    function getSubmittedRegistry() {
+      try {
+        return JSON.parse(localStorage.getItem(EXAM_CONFIG.storagePrefix + "SUBMITTED_REGISTRY") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function markExamAsSubmitted(studentName, subjectName) {
+      const registry = getSubmittedRegistry();
+      const entry = {
+        nama: studentName.toLowerCase().trim(),
+        mapel: subjectName.toLowerCase().trim(),
+        submittedAt: new Date().toISOString()
+      };
+      const exists = registry.some((r) => r.nama === entry.nama && r.mapel === entry.mapel);
+      if (!exists) {
+        registry.push(entry);
+        localStorage.setItem(EXAM_CONFIG.storagePrefix + "SUBMITTED_REGISTRY", JSON.stringify(registry));
+      }
+    }
+
+    function hasAlreadySubmitted(studentName, subjectName) {
+      if (!studentName || !subjectName) return false;
+      const n = studentName.toLowerCase().trim();
+      const m = subjectName.toLowerCase().trim();
+
+      const localHit = getSubmittedRegistry().some((r) => r.nama === n && r.mapel === m);
+      const serverHit = serverSubmittedList.some((r) => r.nama === n && r.mapel === m);
+      return localHit || serverHit;
+    }
+
+    function checkSubmissionEligibility() {
+      const studentName = document.getElementById("student-select").value;
+      const subjectName = document.getElementById("subject-select").value;
+      const banner = document.getElementById("already-submitted-banner");
+      const startBtn = document.getElementById("btn-start-exam");
+
+      if (hasAlreadySubmitted(studentName, subjectName)) {
+        banner.classList.remove("hidden");
+        document.getElementById("already-submitted-text").innerHTML =
+          `Peserta atas nama <strong>${escapeHtml(studentName)}</strong> tercatat telah mengumpulkan ujian untuk mata pelajaran <strong>${escapeHtml(subjectName)}</strong>. Pengerjaan ulang tidak diizinkan.`;
+        startBtn.disabled = true;
+      } else {
+        banner.classList.add("hidden");
+        startBtn.disabled = false;
+      }
+    }
+
+    function handleLoginSubmit(event) {
+      event.preventDefault();
+      const studentName = document.getElementById("student-select").value.trim();
+      const subjectName = document.getElementById("subject-select").value.trim();
+
+      if (!studentName) {
+        showModal({
+          title: "Nama Siswa Belum Dipilih",
+          message: "Silakan pilih nama lengkap Anda pada kolom dropdown terlebih dahulu sebelum memulai ujian.",
+          type: "warning",
+          buttons: [{ label: "Baik, Saya Pilih", primary: true }]
+        });
+        return;
+      }
+
+      if (hasAlreadySubmitted(studentName, subjectName)) {
+        checkSubmissionEligibility();
+        return;
+      }
+
+      showModal({
+        title: "Konfirmasi Mulai Ujian",
+        message: `
+          <div class="space-y-2 text-slate-600">
+            <p>Pastikan identitas Anda sudah benar sebelum memulai:</p>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+              <div><strong>Nama Peserta:</strong> ${escapeHtml(studentName)}</div>
+              <div><strong>Mata Pelajaran:</strong> ${escapeHtml(subjectName)}</div>
+              <div><strong>Alokasi Waktu:</strong> ${EXAM_CONFIG.durationMinutes} Menit (25 Soal)</div>
+            </div>
+            <p class="text-xs text-amber-700 font-medium pt-1">Waktu akan langsung berjalan setelah Anda menekan tombol "Ya, Mulai Ujian".</p>
+          </div>
+        `,
+        type: "info",
+        buttons: [
+          { label: "Batal", primary: false },
+          {
+            label: "Ya, Mulai Ujian",
+            primary: true,
+            onClick: () => startNewExamSession(studentName, subjectName)
+          }
+        ]
+      });
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function startNewExamSession(studentName, subjectName) {
+      const shuffledIds = shuffleArray(QUESTION_BANK.map((q) => q.id));
+
+      currentSession = {
+        studentName,
+        subjectName,
+        shuffledOrder: shuffledIds,
+        answers: {},
+        doubtful: {},
+        remainingSeconds: EXAM_CONFIG.durationMinutes * 60,
+        tabSwitchCount: 0,
+        startedAt: new Date().toISOString(),
+        currentIndex: 0
+      };
+
+      currentIndex = 0;
+      saveActiveSessionToStorage();
+      launchExamUI();
+    }
+
+    function restoreActiveSessionIfAny() {
+      try {
+        const savedRaw = localStorage.getItem(EXAM_CONFIG.storagePrefix + "ACTIVE_SESSION");
+        if (!savedRaw) return;
+        const parsed = JSON.parse(savedRaw);
+        if (!parsed || !parsed.studentName || !Array.isArray(parsed.shuffledOrder)) return;
+
+        if (hasAlreadySubmitted(parsed.studentName, parsed.subjectName)) {
+          localStorage.removeItem(EXAM_CONFIG.storagePrefix + "ACTIVE_SESSION");
+          return;
+        }
+
+        currentSession = parsed;
+        currentIndex = parsed.currentIndex || 0;
+        launchExamUI();
+      } catch (e) {
+        console.error("Gagal memulihkan sesi ujian:", e);
+      }
+    }
+
+    function saveActiveSessionToStorage() {
+      if (!currentSession) return;
+      currentSession.currentIndex = currentIndex;
+      try {
+        localStorage.setItem(
+          EXAM_CONFIG.storagePrefix + "ACTIVE_SESSION",
+          JSON.stringify(currentSession)
+        );
+      } catch (e) {
+        console.error("Gagal menyimpan ke localStorage:", e);
+      }
+    }
+
+    function launchExamUI() {
+      document.getElementById("view-login").classList.add("hidden");
+      document.getElementById("view-receipt").classList.add("hidden");
+      const examView = document.getElementById("view-exam");
+      examView.classList.remove("hidden");
+      examView.classList.add("flex");
+
+      document.getElementById("header-student-info").textContent =
+        `${currentSession.studentName} • ${currentSession.subjectName}`;
+
+      updateViolationBadge();
+      renderNavigationGrids();
+      renderCurrentQuestion();
+      startCountdownTimer();
+    }
+
+    function startCountdownTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        if (!currentSession || isSubmitting) return;
+
+        if (currentSession.remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          submitExamToServer(true);
+          return;
+        }
+
+        currentSession.remainingSeconds -= 1;
+        updateTimerDisplay();
+
+        if (currentSession.remainingSeconds % 5 === 0) {
+          saveActiveSessionToStorage();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const totalSec = Math.max(0, currentSession.remainingSeconds);
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      const formatted = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+
+      const timerDisplay = document.getElementById("timer-display");
+      const timerBox = document.getElementById("timer-box");
+      timerDisplay.textContent = formatted;
+
+      if (totalSec <= 300) {
+        timerBox.className = "flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-rose-50 border border-rose-300 text-rose-700 font-display font-bold text-sm sm:text-base shadow-sm animate-pulse-subtle";
+      } else {
+        timerBox.className = "flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-brand-50 border border-brand-200 text-brand-800 font-display font-bold text-sm sm:text-base shadow-sm";
+      }
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && currentSession && !isSubmitting) {
+        currentSession.tabSwitchCount = (currentSession.tabSwitchCount || 0) + 1;
+        saveActiveSessionToStorage();
+        updateViolationBadge();
+      } else if (!document.hidden && currentSession && !isSubmitting && currentSession.tabSwitchCount > 0) {
+        showModal({
+          title: "Peringatan Aktivitas Ujian",
+          message: `
+            <div class="space-y-2">
+              <p>Sistem mendeteksi Anda berpindah tab atau meninggalkan halaman ujian.</p>
+              <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">
+                Total Perpindahan Tab Tercatat: ${currentSession.tabSwitchCount} kali
+              </div>
+              <p class="text-xs text-slate-500">Mohon tetap berada di halaman ujian ini hingga selesai. Catatan aktivitas ini akan dikirimkan bersama lembar jawaban Anda ke guru pengawas.</p>
+            </div>
+          `,
+          type: "warning",
+          buttons: [{ label: "Saya Mengerti & Lanjutkan Ujian", primary: true }]
+        });
+      }
+    });
+
+    function updateViolationBadge() {
+      const count = currentSession ? (currentSession.tabSwitchCount || 0) : 0;
+      const badge = document.getElementById("tab-violation-badge");
+      const text = document.getElementById("violation-count-text");
+      text.textContent = `${count} Pindah Tab`;
+
+      if (count > 0) {
+        badge.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 text-xs font-semibold border border-amber-300";
+      } else {
+        badge.className = "hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200";
+      }
+    }
+
+    function getQuestionByDisplayIndex(idx) {
+      const qId = currentSession.shuffledOrder[idx];
+      return QUESTION_BANK.find((q) => q.id === qId);
+    }
+
+    function getTypeBadgeLabel(type) {
+      switch (type) {
+        case "pg": return "Pilihan Ganda";
+        case "pg_kompleks": return "Pilihan Ganda Kompleks (Multi-Jawaban)";
+        case "benar_salah": return "Benar / Salah";
+        case "esai": return "Uraian / Esai";
+        case "esai_tabel": return "Uraian Tabel (10 Pasang Kata)";
+        default: return "Soal Ujian";
+      }
+    }
+
+    function renderCurrentQuestion() {
+      const q = getQuestionByDisplayIndex(currentIndex);
+      if (!q) return;
+
+      const totalQ = currentSession.shuffledOrder.length;
+      document.getElementById("q-badge-number").textContent = `Soal No. ${currentIndex + 1} dari ${totalQ}`;
+      document.getElementById("q-badge-type").textContent = getTypeBadgeLabel(q.type);
+
+      document.getElementById("btn-prev").disabled = currentIndex === 0;
+      const isLast = currentIndex === totalQ - 1;
+      document.getElementById("btn-next").classList.toggle("hidden", isLast);
+      document.getElementById("btn-finish-inline").classList.toggle("hidden", !isLast);
+
+      const isDoubt = !!currentSession.doubtful[q.id];
+      const doubtBtn = document.getElementById("btn-doubtful");
+      const doubtIcon = document.getElementById("doubtful-checkbox-icon");
+      if (isDoubt) {
+        doubtBtn.className = "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-bold text-sm transition bg-amber-400 border-amber-500 text-slate-900 shadow-sm";
+        doubtIcon.innerHTML = `<svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>`;
+      } else {
+        doubtBtn.className = "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-semibold text-sm transition bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100";
+        doubtIcon.innerHTML = "";
+      }
+
+      const container = document.getElementById("question-container");
+      let html = "";
+
+      if (q.passageText) {
+        html += `
+          <div class="rounded-2xl bg-slate-50 border border-slate-200/90 p-4 sm:p-5 text-slate-700">
+            ${q.passageTitle ? `<div class="text-xs font-bold uppercase tracking-wider text-brand-700 mb-2 flex items-center gap-1.5">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              <span>${q.passageTitle}</span>
+            </div>` : ""}
+            <div class="text-slate-700 leading-relaxed max-h-72 overflow-y-auto pr-2">
+              ${q.passageText}
+            </div>
+          </div>
+        `;
+      }
+
+      if (q.illustrationSvg) {
+        html += q.illustrationSvg;
+      }
+
+      html += `
+        <div class="text-slate-900 font-medium leading-relaxed">
+          ${q.question}
+        </div>
+      `;
+
+      const savedAns = currentSession.answers[q.id];
+
+      if (q.type === "pg") {
+        const letters = ["A", "B", "C", "D", "E"];
+        html += `<div class="space-y-3 pt-1">`;
+        q.options.forEach((optText, optIdx) => {
+          const isSelected = savedAns === optIdx;
+          html += `
+            <label
+              onclick="selectSingleOption(${q.id}, ${optIdx})"
+              class="flex items-start gap-3.5 p-3.5 sm:p-4 rounded-2xl border-2 cursor-pointer transition select-none ${
+                isSelected
+                  ? "border-brand-600 bg-brand-50/70 shadow-sm"
+                  : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/60"
+              }"
+            >
+              <span class="w-8 h-8 rounded-xl flex items-center justify-center font-display font-bold text-sm shrink-0 transition ${
+                isSelected
+                  ? "bg-brand-700 text-white"
+                  : "bg-slate-100 text-slate-700"
+              }">
+                ${letters[optIdx]}
+              </span>
+              <span class="pt-1 text-slate-800 leading-relaxed flex-1">${optText}</span>
+            </label>
+          `;
+        });
+        html += `</div>`;
+      } else if (q.type === "pg_kompleks") {
+        const letters = ["A", "B", "C", "D", "E"];
+        const selectedArr = Array.isArray(savedAns) ? savedAns : [];
+        html += `
+          <div class="p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-800 font-medium">
+            Petunjuk: Anda dapat memilih <strong>lebih dari satu</strong> jawaban yang benar dengan mencentang kotak di bawah ini.
+          </div>
+          <div class="space-y-3 pt-1">
+        `;
+        q.options.forEach((optText, optIdx) => {
+          const isChecked = selectedArr.includes(optIdx);
+          html += `
+            <label
+              onclick="toggleComplexOption(${q.id}, ${optIdx})"
+              class="flex items-start gap-3.5 p-3.5 sm:p-4 rounded-2xl border-2 cursor-pointer transition select-none ${
+                isChecked
+                  ? "border-brand-600 bg-brand-50/70 shadow-sm"
+                  : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/60"
+              }"
+            >
+              <span class="w-7 h-7 rounded-lg border-2 flex items-center justify-center shrink-0 mt-0.5 transition ${
+                isChecked
+                  ? "bg-brand-700 border-brand-700 text-white"
+                  : "bg-white border-slate-300 text-transparent"
+              }">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+              <div class="flex-1 text-slate-800 leading-relaxed">
+                <span class="font-bold text-slate-900 mr-1">${letters[optIdx]}.</span> ${optText}
+              </div>
+            </label>
+          `;
+        });
+        html += `</div>`;
+      } else if (q.type === "benar_salah") {
+        const currentBS = Array.isArray(savedAns) ? savedAns : new Array(q.statements.length).fill(null);
+        html += `
+          <div class="overflow-x-auto rounded-2xl border border-slate-200">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 text-xs uppercase tracking-wider border-b border-slate-200">
+                  <th class="py-3 px-4 w-10 text-center">No</th>
+                  <th class="py-3 px-4">Pernyataan</th>
+                  <th class="py-3 px-4 text-center w-44">Pilihan Jawaban</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 text-sm">
+        `;
+        q.statements.forEach((stmt, sIdx) => {
+          const val = currentBS[sIdx];
+          html += `
+            <tr class="hover:bg-slate-50/70">
+              <td class="py-3.5 px-4 text-center font-semibold text-slate-500 align-top">${sIdx + 1}</td>
+              <td class="py-3.5 px-4 text-slate-800 leading-relaxed align-top">${stmt}</td>
+              <td class="py-3.5 px-4 align-middle">
+                <div class="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onclick="selectTrueFalse(${q.id}, ${sIdx}, 'B', ${q.statements.length})"
+                    class="px-3.5 py-2 rounded-xl font-bold text-xs border transition ${
+                      val === "B"
+                        ? "bg-emerald-600 border-emerald-600 text-white shadow-sm"
+                        : "bg-white border-slate-300 text-slate-600 hover:bg-emerald-50 hover:border-emerald-300"
+                    }"
+                  >
+                    Benar
+                  </button>
+                  <button
+                    type="button"
+                    onclick="selectTrueFalse(${q.id}, ${sIdx}, 'S', ${q.statements.length})"
+                    class="px-3.5 py-2 rounded-xl font-bold text-xs border transition ${
+                      val === "S"
+                        ? "bg-rose-600 border-rose-600 text-white shadow-sm"
+                        : "bg-white border-slate-300 text-slate-600 hover:bg-rose-50 hover:border-rose-300"
+                    }"
+                  >
+                    Salah
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (q.type === "esai") {
+        const textVal = typeof savedAns === "string" ? savedAns : "";
+        const wordCount = countWords(textVal);
+        html += `
+          <div class="space-y-2">
+            <textarea
+              id="essay-input-${q.id}"
+              rows="${q.rows || 6}"
+              placeholder="${escapeHtml(q.placeholder || 'Tuliskan jawaban uraian Anda di sini...')}"
+              oninput="handleEssayInput(${q.id}, this.value, ${!!q.showWordCount})"
+              class="w-full p-4 rounded-2xl border-2 border-slate-200 focus:border-brand-600 focus:outline-none text-slate-800 leading-relaxed transition"
+            >${escapeHtml(textVal)}</textarea>
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span>Jawaban uraian akan tersimpan otomatis untuk dikoreksi oleh guru.</span>
+              ${
+                q.showWordCount
+                  ? `<span id="word-counter-${q.id}" class="font-semibold px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700">Jumlah kata: ${wordCount} / ${q.targetWords} kata</span>`
+                  : `<span id="word-counter-${q.id}" class="font-medium text-slate-400">${wordCount} kata</span>`
+              }
+            </div>
+          </div>
+        `;
+      } else if (q.type === "esai_tabel") {
+        const rowsData = Array.isArray(savedAns)
+          ? savedAns
+          : Array.from({ length: q.rowCount }, () => ({ kajian: "", populer: "" }));
+
+        html += `
+          <div class="overflow-x-auto rounded-2xl border border-slate-200">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 text-xs uppercase tracking-wider border-b border-slate-200">
+                  <th class="py-3 px-3 text-center w-12">No</th>
+                  <th class="py-3 px-4">Kata Kajian (Ilmiah/Formal)</th>
+                  <th class="py-3 px-4">Kata Populer (Sehari-hari)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 text-sm">
+        `;
+        for (let r = 0; r < q.rowCount; r++) {
+          const rowItem = rowsData[r] || { kajian: "", populer: "" };
+          html += `
+            <tr class="bg-white">
+              <td class="py-2 px-3 text-center font-semibold text-slate-500">${r + 1}</td>
+              <td class="py-2 px-3">
+                <input
+                  type="text"
+                  value="${escapeHtml(rowItem.kajian)}"
+                  placeholder="Kata kajian ke-${r + 1}"
+                  oninput="handleTableEssayInput(${q.id}, ${r}, 'kajian', this.value, ${q.rowCount})"
+                  class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-brand-600 focus:outline-none"
+                />
+              </td>
+              <td class="py-2 px-3">
+                <input
+                  type="text"
+                  value="${escapeHtml(rowItem.populer)}"
+                  placeholder="Kata populer ke-${r + 1}"
+                  oninput="handleTableEssayInput(${q.id}, ${r}, 'populer', this.value, ${q.rowCount})"
+                  class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-brand-600 focus:outline-none"
+                />
+              </td>
+            </tr>
+          `;
+        }
+        html += `
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-slate-500">Isi pasangan Kata Kajian dan Kata Populer pada 10 baris tabel di atas.</p>
+        `;
+      }
+
+      container.innerHTML = html;
+      renderNavigationGrids();
+    }
+
+    function selectSingleOption(qId, optIdx) {
+      currentSession.answers[qId] = optIdx;
+      saveActiveSessionToStorage();
+      renderCurrentQuestion();
+    }
+
+    function toggleComplexOption(qId, optIdx) {
+      let arr = Array.isArray(currentSession.answers[qId]) ? [...currentSession.answers[qId]] : [];
+      if (arr.includes(optIdx)) {
+        arr = arr.filter((x) => x !== optIdx);
+      } else {
+        arr.push(optIdx);
+        arr.sort((a, b) => a - b);
+      }
+      currentSession.answers[qId] = arr;
+      saveActiveSessionToStorage();
+      renderCurrentQuestion();
+    }
+
+    function selectTrueFalse(qId, stmtIdx, val, totalStmts) {
+      let arr = Array.isArray(currentSession.answers[qId])
+        ? [...currentSession.answers[qId]]
+        : new Array(totalStmts).fill(null);
+      arr[stmtIdx] = val;
+      currentSession.answers[qId] = arr;
+      saveActiveSessionToStorage();
+      renderCurrentQuestion();
+    }
+
+    function handleEssayInput(qId, value, showTarget) {
+      currentSession.answers[qId] = value;
+      saveActiveSessionToStorage();
+      renderNavigationGrids();
+
+      const wc = countWords(value);
+      const counterEl = document.getElementById(`word-counter-${qId}`);
+      if (counterEl) {
+        counterEl.textContent = showTarget
+          ? `Jumlah kata: ${wc} / 600 kata`
+          : `${wc} kata`;
+      }
+    }
+
+    function handleTableEssayInput(qId, rowIdx, field, value, rowCount) {
+      let arr = Array.isArray(currentSession.answers[qId])
+        ? [...currentSession.answers[qId]]
+        : Array.from({ length: rowCount }, () => ({ kajian: "", populer: "" }));
+      arr[rowIdx] = { ...arr[rowIdx], [field]: value };
+      currentSession.answers[qId] = arr;
+      saveActiveSessionToStorage();
+      renderNavigationGrids();
+    }
+
+    function toggleDoubtful() {
+      const q = getQuestionByDisplayIndex(currentIndex);
+      if (!q) return;
+      currentSession.doubtful[q.id] = !currentSession.doubtful[q.id];
+      saveActiveSessionToStorage();
+      renderCurrentQuestion();
+    }
+
+    function navigateQuestion(targetIdx) {
+      if (targetIdx < 0 || targetIdx >= currentSession.shuffledOrder.length) return;
+      currentIndex = targetIdx;
+      saveActiveSessionToStorage();
+      renderCurrentQuestion();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function isQuestionAnswered(q) {
+      const ans = currentSession.answers[q.id];
+      if (q.type === "pg") {
+        return typeof ans === "number";
+      }
+      if (q.type === "pg_kompleks") {
+        return Array.isArray(ans) && ans.length > 0;
+      }
+      if (q.type === "benar_salah") {
+        return Array.isArray(ans) && ans.some((v) => v === "B" || v === "S");
+      }
+      if (q.type === "esai") {
+        return typeof ans === "string" && ans.trim().length > 0;
+      }
+      if (q.type === "esai_tabel") {
+        return (
+          Array.isArray(ans) &&
+          ans.some((row) => (row.kajian && row.kajian.trim() !== "") || (row.populer && row.populer.trim() !== ""))
+        );
+      }
+      return false;
+    }
+
+    function renderNavigationGrids() {
+      const desktopGrid = document.getElementById("desktop-nav-grid");
+      const mobileGrid = document.getElementById("mobile-nav-grid");
+      if (!desktopGrid || !mobileGrid) return;
+
+      let answeredCount = 0;
+      let buttonsHtml = "";
+
+      currentSession.shuffledOrder.forEach((qId, idx) => {
+        const q = QUESTION_BANK.find((item) => item.id === qId);
+        const answered = isQuestionAnswered(q);
+        const doubtful = !!currentSession.doubtful[qId];
+        const isCurrent = idx === currentIndex;
+
+        if (answered) answeredCount++;
+
+        let colorClasses = "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200";
+        if (doubtful) {
+          colorClasses = "bg-amber-400 text-slate-900 border-amber-500 hover:bg-amber-500";
+        } else if (answered) {
+          colorClasses = "bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600";
+        }
+
+        const activeRing = isCurrent ? "ring-2 ring-offset-2 ring-slate-900 scale-105" : "";
+
+        buttonsHtml += `
+          <button
+            type="button"
+            onclick="navigateQuestion(${idx}); toggleMobileNav(false);"
+            class="h-10 rounded-xl border font-display font-bold text-xs sm:text-sm transition flex items-center justify-center ${colorClasses} ${activeRing}"
+          >
+            ${idx + 1}
+          </button>
+        `;
+      });
+
+      desktopGrid.innerHTML = buttonsHtml;
+      mobileGrid.innerHTML = buttonsHtml;
+
+      const total = currentSession.shuffledOrder.length;
+      document.getElementById("desktop-progress-text").textContent = `${answeredCount} / ${total} Terjawab`;
+      document.getElementById("mobile-progress-text").textContent = `${answeredCount} dari ${total} soal telah dijawab`;
+    }
+
+    function toggleMobileNav(open) {
+      const drawer = document.getElementById("mobile-nav-drawer");
+      if (open) {
+        drawer.classList.remove("hidden");
+        drawer.classList.add("flex");
+      } else {
+        drawer.classList.add("hidden");
+        drawer.classList.remove("flex");
+      }
+    }
+
+    function setExamFontSize(size) {
+      const view = document.getElementById("view-exam");
+      view.classList.remove("exam-font-sm", "exam-font-md", "exam-font-lg");
+      view.classList.add(`exam-font-${size}`);
+
+      ["sm", "md", "lg"].forEach((s) => {
+        const btn = document.getElementById(`font-btn-${s}`);
+        if (!btn) return;
+        if (s === size) {
+          btn.className = "px-2 py-1 text-xs font-bold rounded-lg bg-white text-brand-700 shadow-sm";
+        } else {
+          btn.className = "px-2 py-1 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900";
+        }
+      });
+    }
+
+    function evaluateExamResults() {
+      const letters = ["A", "B", "C", "D", "E"];
+      let objectiveQuestionsCount = 0;
+      let earnedObjectivePoints = 0;
+
+      const detailItems = QUESTION_BANK.map((q) => {
+        const rawAns = currentSession.answers[q.id];
+
+        if (q.type === "pg") {
+          objectiveQuestionsCount++;
+          const isCorrect = rawAns === q.answerKey;
+          if (isCorrect) earnedObjectivePoints += 1;
+
+          return {
+            noSoalAsli: q.id,
+            tipe: "Pilihan Ganda",
+            jawabanSiswa: typeof rawAns === "number" ? `${letters[rawAns]}. ${q.options[rawAns]}` : "(Kosong)",
+            kunciJawaban: `${letters[q.answerKey]}. ${q.options[q.answerKey]}`,
+            benar: isCorrect,
+            poin: isCorrect ? 1 : 0
+          };
+        }
+
+        if (q.type === "pg_kompleks") {
+          objectiveQuestionsCount++;
+          const selected = Array.isArray(rawAns) ? [...rawAns].sort((a, b) => a - b) : [];
+          const keySorted = [...q.answerKey].sort((a, b) => a - b);
+          const isCorrect =
+            selected.length === keySorted.length &&
+            selected.every((val, index) => val === keySorted[index]);
+
+          if (isCorrect) earnedObjectivePoints += 1;
+
+          return {
+            noSoalAsli: q.id,
+            tipe: "Pilihan Ganda Kompleks",
+            jawabanSiswa:
+              selected.length > 0
+                ? selected.map((i) => `${letters[i]}. ${q.options[i]}`).join(" | ")
+                : "(Kosong)",
+            kunciJawaban: keySorted.map((i) => `${letters[i]}. ${q.options[i]}`).join(" | "),
+            benar: isCorrect,
+            poin: isCorrect ? 1 : 0
+          };
+        }
+
+        if (q.type === "benar_salah") {
+          objectiveQuestionsCount++;
+          const userArr = Array.isArray(rawAns) ? rawAns : [];
+          let matchedStatements = 0;
+          q.answerKey.forEach((expected, idx) => {
+            if (userArr[idx] === expected) matchedStatements++;
+          });
+          const itemPoint = Number((matchedStatements / q.answerKey.length).toFixed(4));
+          earnedObjectivePoints += itemPoint;
+
+          return {
+            noSoalAsli: q.id,
+            tipe: "Benar / Salah",
+            jawabanSiswa: q.statements.map((_, idx) => `P${idx + 1}: ${userArr[idx] || "-"}`).join(", "),
+            kunciJawaban: q.answerKey.map((k, idx) => `P${idx + 1}: ${k}`).join(", "),
+            benarPernyataan: `${matchedStatements}/${q.answerKey.length}`,
+            poin: itemPoint
+          };
+        }
+
+        if (q.type === "esai_tabel") {
+          const rows = Array.isArray(rawAns) ? rawAns : [];
+          const formattedTable = rows
+            .map((r, idx) => `${idx + 1}. Kajian: ${r.kajian || "-"} | Populer: ${r.populer || "-"}`)
+            .join("\n");
+
+          return {
+            noSoalAsli: q.id,
+            tipe: "Uraian Tabel (10 Kata Kajian & Populer)",
+            pertanyaan: q.question,
+            jawabanUraian: formattedTable.trim() ? formattedTable : "(Tidak dijawab)"
+          };
+        }
+
+        return {
+          noSoalAsli: q.id,
+          tipe: "Uraian / Esai",
+          pertanyaan: q.question,
+          jawabanUraian: typeof rawAns === "string" && rawAns.trim() ? rawAns.trim() : "(Tidak dijawab)"
+        };
+      });
+
+      const skorObjektifSkala100 =
+        objectiveQuestionsCount > 0
+          ? Number(((earnedObjectivePoints / objectiveQuestionsCount) * 100).toFixed(2))
+          : 0;
+
+      return {
+        skorObjektif: skorObjektifSkala100,
+        poinObjektifMentah: `${Number(earnedObjectivePoints.toFixed(2))} / ${objectiveQuestionsCount}`,
+        detailJawaban: detailItems
+      };
+    }
+
+    function promptSubmitExam() {
+      let answeredCount = 0;
+      let doubtfulCount = 0;
+      const total = currentSession.shuffledOrder.length;
+
+      currentSession.shuffledOrder.forEach((qId) => {
+        const q = QUESTION_BANK.find((item) => item.id === qId);
+        if (isQuestionAnswered(q)) answeredCount++;
+        if (currentSession.doubtful[qId]) doubtfulCount++;
+      });
+
+      const unansweredCount = total - answeredCount;
+
+      showModal({
+        title: "Konfirmasi Kumpulkan Ujian",
+        message: `
+          <div class="space-y-3">
+            <p>Apakah Anda yakin ingin mengakhiri ujian dan mengumpulkan seluruh jawaban sekarang?</p>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+              <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800">
+                <div class="font-display font-extrabold text-base">${answeredCount}</div>
+                <div>Terjawab</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
+                <div class="font-display font-extrabold text-base">${doubtfulCount}</div>
+                <div>Ragu-ragu</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700">
+                <div class="font-display font-extrabold text-base">${unansweredCount}</div>
+                <div>Kosong</div>
+              </div>
+            </div>
+            ${
+              unansweredCount > 0 || doubtfulCount > 0
+                ? `<p class="text-xs text-amber-700 font-medium">Perhatian: Masih terdapat soal yang belum terjawab atau ditandai ragu-ragu. Setelah dikumpulkan, Anda tidak dapat mengubah jawaban lagi.</p>`
+                : `<p class="text-xs text-emerald-700 font-medium">Seluruh butir soal telah Anda kerjakan dengan lengkap.</p>`
+            }
+          </div>
+        `,
+        type: "info",
+        buttons: [
+          { label: "Periksa Kembali", primary: false },
+          {
+            label: "Ya, Kumpulkan Sekarang",
+            primary: true,
+            onClick: () => submitExamToServer(false)
+          }
+        ]
+      });
+    }
+
+    async function submitExamToServer(isAutoTimeout = false) {
+      if (isSubmitting || !currentSession) return;
+      isSubmitting = true;
+      if (timerInterval) clearInterval(timerInterval);
+
+      showLoader(
+        isAutoTimeout ? "Waktu Ujian Telah Habis!" : "Mengirim Lembar Jawaban...",
+        "Sedang menyimpan jawaban Anda ke server sekolah. Jangan tutup halaman ini..."
+      );
+
+      const evaluation = evaluateExamResults();
+      const totalAllocatedSeconds = EXAM_CONFIG.durationMinutes * 60;
+      const elapsedSeconds = Math.max(1, totalAllocatedSeconds - Math.max(0, currentSession.remainingSeconds));
+      const elapsedMins = Math.floor(elapsedSeconds / 60);
+      const elapsedSecs = elapsedSeconds % 60;
+      const durasiFormatted = `${elapsedMins} menit ${elapsedSecs} detik`;
+
+      const now = new Date();
+      const timestampLocal = now.toLocaleString("id-ID", {
+        dateStyle: "medium",
+        timeStyle: "medium"
+      });
+
+      const payload = {
+        timestamp: timestampLocal,
+        isoTimestamp: now.toISOString(),
+        namaSiswa: currentSession.studentName,
+        mataPelajaran: currentSession.subjectName,
+        kelas: EXAM_CONFIG.gradePhase,
+        asesmen: EXAM_CONFIG.examTitle,
+        skorObjektif: evaluation.skorObjektif,
+        detailJawaban: JSON.stringify({
+          poinObjektif: evaluation.poinObjektifMentah,
+          butirJawaban: evaluation.detailJawaban
+        }),
+        jumlahPindahTab: currentSession.tabSwitchCount || 0,
+        durasiPengerjaan: durasiFormatted
+      };
+
+      let serverStatusText = "Tersimpan Resmi di Server";
+      const isPlaceholderUrl = !GAS_URL || GAS_URL.includes("MASUKKAN_URL_WEB_APP_GAS_DI_SINI");
+
+      try {
+        if (!isPlaceholderUrl) {
+          const response = await fetch(GAS_URL, {
+            method: "POST",
+            redirect: "follow",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (response.ok) {
+            const resJson = await response.json();
+            if (resJson && resJson.status === "duplicate") {
+              serverStatusText = "Sudah Tercatat Sebelumnya di Server";
+            } else if (resJson && resJson.status === "error") {
+              throw new Error(resJson.message || "Gagal menyimpan di server");
+            }
+          }
+        } else {
+          await new Promise((r) => setTimeout(r, 800));
+          serverStatusText = "Tersimpan (Mode Simulasi Lokal)";
+        }
+      } catch (err) {
+        console.error("Error saat mengirim ke GAS_URL:", err);
+        serverStatusText = "Tersimpan di Perangkat (Sinkronisasi Tertunda)";
+      }
+
+      markExamAsSubmitted(currentSession.studentName, currentSession.subjectName);
+      localStorage.removeItem(EXAM_CONFIG.storagePrefix + "ACTIVE_SESSION");
+
+      document.getElementById("receipt-student-name").textContent = currentSession.studentName;
+      document.getElementById("receipt-subject").textContent = currentSession.subjectName;
+      document.getElementById("receipt-timestamp").textContent = timestampLocal;
+      document.getElementById("receipt-duration").textContent = durasiFormatted;
+      document.getElementById("receipt-server-status").innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>${serverStatusText}</span>
+      `;
+
+      currentSession = null;
+      isSubmitting = false;
+      hideLoader();
+
+      document.getElementById("view-exam").classList.add("hidden");
+      document.getElementById("view-exam").classList.remove("flex");
+      const receiptView = document.getElementById("view-receipt");
+      receiptView.classList.remove("hidden");
+      receiptView.classList.add("flex");
+    }
+
+    function returnToLoginScreen() {
+      document.getElementById("view-receipt").classList.add("hidden");
+      document.getElementById("view-receipt").classList.remove("flex");
+      document.getElementById("view-login").classList.remove("hidden");
+      checkSubmissionEligibility();
+    }
+
+    function showLoader(title, subtitle) {
+      document.getElementById("loader-title").textContent = title;
+      document.getElementById("loader-subtitle").textContent = subtitle;
+      const el = document.getElementById("global-loader");
+      el.classList.remove("hidden");
+      el.classList.add("flex");
+    }
+
+    function hideLoader() {
+      const el = document.getElementById("global-loader");
+      el.classList.add("hidden");
+      el.classList.remove("flex");
+    }
+
+    function showModal({ title, message, type = "info", buttons = [] }) {
+      const modal = document.getElementById("custom-modal");
+      const headerBar = document.getElementById("modal-header-bar");
+      const iconBox = document.getElementById("modal-icon-container");
+      const titleEl = document.getElementById("modal-title");
+      const msgEl = document.getElementById("modal-message");
+      const actionsEl = document.getElementById("modal-actions");
+
+      titleEl.textContent = title;
+      msgEl.innerHTML = message;
+
+      if (type === "warning") {
+        headerBar.className = "h-1.5 bg-amber-500";
+        iconBox.className = "w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0";
+        iconBox.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+      } else if (type === "success") {
+        headerBar.className = "h-1.5 bg-emerald-600";
+        iconBox.className = "w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0";
+        iconBox.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+      } else {
+        headerBar.className = "h-1.5 bg-brand-600";
+        iconBox.className = "w-11 h-11 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center shrink-0";
+        iconBox.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+      }
+
+      actionsEl.innerHTML = "";
+      buttons.forEach((btn) => {
+        const buttonEl = document.createElement("button");
+        buttonEl.type = "button";
+        buttonEl.textContent = btn.label;
+        buttonEl.className = btn.primary
+          ? "px-5 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-semibold text-sm shadow-sm transition"
+          : "px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition";
+
+        buttonEl.onclick = () => {
+          closeModal();
+          if (typeof btn.onClick === "function") btn.onClick();
+        };
+        actionsEl.appendChild(buttonEl);
+      });
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("custom-modal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function escapeHtml(str) {
+      if (typeof str !== "string") return "";
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function countWords(text) {
+      if (!text || !text.trim()) return 0;
+      return text.trim().split(/\s+/).length;
+    }
+  </script>
+</body>
+</html>
